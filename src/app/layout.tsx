@@ -23,9 +23,9 @@ export default function RootLayout({
       lang="en"
       className={`${sourceSansPro.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-row antialiased">
+      <body className="min-h-full flex flex-row antialiased ">
         <SidebarFilter></SidebarFilter>
-        {children}
+        <div className="px-6 w-full">{children}</div>
       </body>
     </html>
   );

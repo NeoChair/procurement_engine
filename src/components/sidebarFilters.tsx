@@ -112,13 +112,71 @@ const WAREHOUSE_OPTIONS: Option[] = [
     { value: "WF", label: "WF" },
 ];
 
+const MIN_WIDTH = 200;
+const MAX_WIDTH = 480;
+const DEFAULT_WIDTH = 256;
+
 export default function SidebarFilter() {
     const [language, setLanguage] = useState("kr");
     const [factory, setFactory] = useState("ALL");
     const [warehouse, setWarehouse] = useState("ALL");
+    const [width, setWidth] = useState(DEFAULT_WIDTH);
+    const [collapsed, setCollapsed] = useState(false);
+    const isResizing = useRef(false);
+
+    useEffect(() => {
+        function handleMouseMove(e: MouseEvent) {
+            if (!isResizing.current) return;
+            const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, e.clientX));
+            setWidth(newWidth);
+        }
+        function handleMouseUp() {
+            isResizing.current = false;
+        }
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+        return () => {
+            document.removeEventListener("mousemove", handleMouseMove);
+            document.removeEventListener("mouseup", handleMouseUp);
+        };
+    }, []);
+
+    if (collapsed) {
+        return (
+            <div className="h-screen bg-[#f0f2f6] border-r border-gray-300 flex items-start justify-center w-8">
+                <button
+                    type="button"
+                    onClick={() => setCollapsed(false)}
+                    aria-label="사이드바 펼치기"
+                    className="mt-4 flex h-6 w-6 items-center justify-center rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                >
+                    »
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <div className="w-64 h-screen bg-[#f0f2f6] border-r border-gray-300 px-4 py-6 overflow-y-auto">
+        <div
+            className="relative h-screen bg-[#f0f2f6] border-r border-gray-300 px-4 py-6 overflow-y-auto flex-shrink-0"
+            style={{ width }}
+        >
+            <div className="flex justify-end">
+                <button
+                    type="button"
+                    onClick={() => setCollapsed(true)}
+                    aria-label="사이드바 접기"
+                    className="flex h-6 w-6 items-center justify-center rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                >
+                    ✕
+                </button>
+            </div>
+            <div
+                onMouseDown={() => {
+                    isResizing.current = true;
+                }}
+                className="absolute top-0 right-0 h-full w-1 cursor-col-resize hover:bg-[rgb(255,75,75)]/40"
+            />
             <div className="flex flex-col gap-5">
 
                 <div className="flex flex-col gap-1">
