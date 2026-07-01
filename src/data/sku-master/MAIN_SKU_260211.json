@@ -1,0 +1,2729 @@
+[
+  {
+    "SKU": "CHA-MS-801-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-801-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-801-BL",
+    "IsOn": "KEEP",
+    "Factory": "MT",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-801-PK",
+    "IsOn": "KEEP",
+    "Factory": "MT",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-801-SB",
+    "IsOn": "KEEP",
+    "Factory": "MT",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-SB",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-CPS-BK-2PK",
+    "IsOn": "KEEP",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBS-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBS-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBS-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBS-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBS-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBSH-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBSH-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBSH-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBSH-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-DBSH-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-M28-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-M28-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-M28-PM",
+    "IsOn": "FALSE",
+    "Factory": "MT",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-M28-PP",
+    "IsOn": "FALSE",
+    "Factory": "MT",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-M28-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-M28-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MS-M28-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-NEC-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBS-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBS-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBS-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBS-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBS-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBSH-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBSH-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBSH-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBSH-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STDBSH-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-STNEC-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-ETC-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-ETC-BL",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-ETC-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-ETC-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+   {
+    "SKU": "CHA-MS-N20-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-MT",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-MT",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-RD",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-GM-APEX-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-GM-NEX-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NEX-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-GM-NEX-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-GM-NEX-RD",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NEX-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-GR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-PR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-TTN-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NYX-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NYX-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NYX-RD",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NYX-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-NYX-PR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-PCC-PUBK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-PCC-PUWH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-PCC-PUPK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-PCC-FBBL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-PCC-FBGR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-BG",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZY-MN",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-BG",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-MN",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-TDWH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-TDPK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-TDBK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-TDBL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZW-TDGR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-WH",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-BL",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-GR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-TDY-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-BG",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-BL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZD-MN",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CZPU-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZPU-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZPU-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZPU-PK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CZPU-IV",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+   {
+    "SKU": "CHA-HC-ACT-GR",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-IV",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-DG",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-BK",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-OR",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-JET",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-HPAC-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-HPAC-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-HPAC-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-CORE-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-CORE-WH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-CORE-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CORE-JET",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-BK-N",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-BR-N",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNT-BK",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNT-BR",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNT-GY",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNT-IV",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNTH-BK",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNTH-BR",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNTH-GY",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-VNTH-DB",
+    "IsOn": "TRUE",
+    "Factory": "TYJ",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CENH-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CENH-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CENH-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUB-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUB-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUBH-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUBH-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUBH-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CUB-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CVS-GN",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CVS-GY",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CVS-BL",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CVS-IV",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-BK",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-OR",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-WH",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MLW-BG",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MLW-BL",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MLW-BR",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MLW-GY",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MEW-BG",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MEW-GY",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MEW-BL",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MEW-BR",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-MEW-PK",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-BLC-IV",
+    "IsOn": "FALSE",
+    "Factory": "HR",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-BK",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-BR",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-GY",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CHMN-IV",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PAC-BK",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PAC-BR",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PACE-BK",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PACE-BR",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PACE-IV",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PACE-JET",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PACE-WH",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-PAC-JET",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5T",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5TX",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5F",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5Q",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5K",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-5CK",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6T",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6TX",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6F",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6Q",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6K",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-6CK",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8T",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8TX",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8F",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8Q",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8K",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-8CK",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10T",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10TX",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10F",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10Q",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10K",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-10CK",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12T",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12TX",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12F",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12Q",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12K",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-12CK",
+    "IsOn": "TRUE",
+    "Factory": "GF",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14T",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14TX",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14F",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14Q",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14K",
+    "IsOn": "KEEP",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-BA-14CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-5CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-6CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-8CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-10CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-12CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14T",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14TX",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14F",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14Q",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14K",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-ME-GT-14CK",
+    "IsOn": "FALSE",
+    "Factory": "GF",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-BN-6T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BN-8T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BN-8F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BN-8Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-10T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-10F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-10Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-10K",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-12T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "FALSE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-BA-12F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-12Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-BA-12K",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10TXL",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10K",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-10CK",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12TXL",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12K",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-12CK",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14T",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14TXL",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14F",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14Q",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14K",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "MAT-HY-PL-14CK",
+    "IsOn": "TRUE",
+    "Factory": "MD",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "FALSE"
+  }
+]
