@@ -494,6 +494,132 @@
     "LA": "TRUE",
     "NJ": "TRUE"
   },
+   {
+    "SKU": "CHA-MS-N20-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N20-MT",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-BK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-BG",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-IV",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-GY",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-PK",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-MS-N30-MT",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
   {
     "SKU": "CHA-GM-APEX-BK",
     "IsOn": "TRUE",
@@ -1043,6 +1169,51 @@
     "LA": "TRUE",
     "NJ": "TRUE"
   },
+   {
+    "SKU": "CHA-HC-ACT-GR",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-IV",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-DG",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-BK",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-ACT-OR",
+    "IsOn": "TRUE",
+    "Factory": "DMS",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
   {
     "SKU": "CHA-PU-BLC-BK",
     "IsOn": "TRUE",
@@ -1380,6 +1551,60 @@
     "SKU": "CHA-MT-CVS-IV",
     "IsOn": "FALSE",
     "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-BK",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-BR",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-MT-CEN-H-WH",
+    "IsOn": "FALSE",
+    "Factory": "YB",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-BK",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-OR",
+    "IsOn": "FALSE",
+    "Factory": "",
+    "AT": "FALSE",
+    "TX": "FALSE",
+    "LA": "FALSE",
+    "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-PU-CNTT-WH",
+    "IsOn": "FALSE",
+    "Factory": "",
     "AT": "FALSE",
     "TX": "FALSE",
     "LA": "FALSE",
