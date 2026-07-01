@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig = {
+  allowedDevOrigins: ["10.5.0.2", "10.5.0.2:3000"],
 };
 
-export default nextConfig;
+module.exports = nextConfig;

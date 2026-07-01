@@ -282,7 +282,9 @@ export async function GET() {
         const result = await db.request().query<SummaryRow>(SUMMARY_QUERY);
 
         const rows = result.recordset;
-        const snapshotDate = rows[0]?.GATH_DT ?? null;
+        // rows[0]이 TB_SHIPPING_PLAN_STOCK에만 존재하는 SKU면 LEFT JOIN으로 GATH_DT가 NULL이 될 수 있으므로
+        // 첫 번째 non-null 값을 찾는다.
+        const snapshotDate = rows.find((r) => r.GATH_DT)?.GATH_DT ?? null;
 
         console.log(`DB 조회: ${rows.length}개 SKU (기준일: ${snapshotDate})`);
 
