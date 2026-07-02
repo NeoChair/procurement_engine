@@ -56,14 +56,26 @@ function largestRemainderInt(raw: Record<RatioWh, number>, targetTotal: number):
     return result;
 }
 
+export type RebalanceResult = {
+    shipQty: Record<RatioWh, number>;
+    /** 창고별 Zero-Ship Case(빈 창고 채우기) 적용 여부 */
+    zeroFlag: Record<RatioWh, boolean>;
+    /** SKU 전체에 대해 Step2(Target Ratio 분배)가 적용됐는지 (분배할 base가 있으면 항상 적용) */
+    gapFlag: boolean;
+};
+
 /** 단일 SKU에 대해 CA/TX/NJ/GA 4개 창고의 선적량을 재배분한다. WF는 대상 아님(호출부에서 별도 유지). */
 export function rebalanceSku(
     rows: RebalanceWhInput[],
     mode: Week1AllocMode,
-): Record<RatioWh, number> {
+): RebalanceResult {
     const byWh = new Map(rows.map(r => [r.wh, r]));
     const result = {} as Record<RatioWh, number>;
-    for (const wh of RATIO_WAREHOUSES) result[wh] = byWh.get(wh)?.baseShip ?? 0;
+    const zeroFlag = {} as Record<RatioWh, boolean>;
+    for (const wh of RATIO_WAREHOUSES) {
+        result[wh] = byWh.get(wh)?.baseShip ?? 0;
+        zeroFlag[wh] = false;
+    }
 
     // ── Step 1: Zero-Ship Case ──
     const totalNeed4wh = RATIO_WAREHOUSES.reduce((s, wh) => s + (byWh.get(wh)?.need28d ?? 0), 0);
@@ -73,13 +85,14 @@ export function rebalanceSku(
             if (!r) continue;
             if (r.baseShip === 0 && r.oh === 0 && r.it === 0 && r.need28d === 0) {
                 result[wh] = Math.round(totalNeed4wh * TARGET_RATIO[wh]);
+                zeroFlag[wh] = true;
             }
         }
     }
 
     // ── Step 2: Target Ratio 직접분배 (cap 없음, 총량 보존) ──
     const totalBaseShip = RATIO_WAREHOUSES.reduce((s, wh) => s + result[wh], 0);
-    if (totalBaseShip <= 0) return result;
+    if (totalBaseShip <= 0) return { shipQty: result, zeroFlag, gapFlag: false };
 
     const ratioSum = RATIO_WAREHOUSES.reduce((s, wh) => s + TARGET_RATIO[wh], 0);
     const normTarget = {} as Record<RatioWh, number>;
@@ -113,5 +126,6 @@ export function rebalanceSku(
     }
 
     const targetIntTotal = Math.round(totalBaseShip);
-    return largestRemainderInt(rawAlloc, targetIntTotal);
+    const shipQty = largestRemainderInt(rawAlloc, targetIntTotal);
+    return { shipQty, zeroFlag, gapFlag: true };
 }

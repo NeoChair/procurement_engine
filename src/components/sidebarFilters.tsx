@@ -412,8 +412,7 @@ export default function SidebarFilter({
                                         name="week1AllocMode"
                                         checked={filters.week1AllocMode === "target_ratio"}
                                         onChange={() => update({ week1AllocMode: "target_ratio" })}
-                                        className="accent-[#ff4b4b] w-[15px] h-[15px]" 
-                                        defaultChecked
+                                        className="accent-[#ff4b4b] w-[15px] h-[15px]"
                                     />
                                     <label htmlFor="week1-target" className="text-sm text-gray-700">목표비율 (현행)</label>
                                 </div>
