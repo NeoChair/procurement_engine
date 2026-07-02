@@ -5,7 +5,6 @@ import { WH_GROUPS, type WhKey } from "./shipCalc";
 
 const PO_NEED_DAYS = 45;
 const PO_HORIZON_DAYS = 120;
-const ACTL_BASE_DAYS = 63;
 
 export type PoCalcRow = {
     key: string;
@@ -52,7 +51,8 @@ export function computePoCalc(rows: SummaryRow[], logicMode: LogicMode): PoCalcR
             if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
-                daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / ACTL_BASE_DAYS;
+                // LY_ACTL은 창고별 리드타임(lt)만큼의 작년 forward 실적이므로 lt로 나눠야 한다.
+                daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / lt;
             }
 
             const oh = sumParts(r, parts, "STOCK");
