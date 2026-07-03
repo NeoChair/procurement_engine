@@ -83,10 +83,9 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
         const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode);
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
-        r = [...r].sort((a, b) => {
-            if ((a.shipQty > 0) !== (b.shipQty > 0)) return a.shipQty > 0 ? -1 : 1;
-            return b.shipQty - a.shipQty;
-        });
+        // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
+        // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
+        r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
         return r;
     }, [rows, filters]);
 
@@ -100,6 +99,10 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                 rows={displayRows}
                 rowKey={r => r.key}
                 fileName="선적_Table2"
+                defaultSort={(a, b) => {
+                    if ((a.shipQty > 0) !== (b.shipQty > 0)) return a.shipQty > 0 ? -1 : 1;
+                    return b.shipQty - a.shipQty;
+                }}
             />
         </div>
     );

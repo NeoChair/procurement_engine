@@ -67,16 +67,8 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             calc = calc.filter(r => filters.warehouse.includes(r.wh));
         }
 
-        // 발주량 > 0인 SKU가 위로, SKU 내에서는 창고/발주량 순
-        const skuPoSum = new Map<string, number>();
-        for (const r of calc) skuPoSum.set(r.sku, (skuPoSum.get(r.sku) ?? 0) + r.finalPoQty);
-        calc.sort((a, b) => {
-            const sa = skuPoSum.get(a.sku) ?? 0;
-            const sb = skuPoSum.get(b.sku) ?? 0;
-            if (sa !== sb) return sb - sa;
-            if (a.sku !== b.sku) return a.sku.localeCompare(b.sku);
-            return b.finalPoQty - a.finalPoQty;
-        });
+        // 계산모드와 무관하게 항상 같은 순서(SKU→창고)로 유지. 발주량>0 SKU 우선 표시는 priorityKey로 처리.
+        calc.sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
 
         return calc.map(r => ({
             ...r,
@@ -84,6 +76,12 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             producing: MAIN_SKU_MAP.get(r.sku)?.IsOn === "TRUE" ? "생산" : "-",
         }));
     }, [rows, filters]);
+
+    const skuPoSum = useMemo(() => {
+        const map = new Map<string, number>();
+        for (const r of displayRows) map.set(r.sku, (map.get(r.sku) ?? 0) + r.finalPoQty);
+        return map;
+    }, [displayRows]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
@@ -95,6 +93,13 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 rows={displayRows}
                 rowKey={r => r.key}
                 fileName="발주_Table2"
+                defaultSort={(a, b) => {
+                    const sa = skuPoSum.get(a.sku) ?? 0;
+                    const sb = skuPoSum.get(b.sku) ?? 0;
+                    if (sa !== sb) return sb - sa;
+                    if (a.sku !== b.sku) return a.sku.localeCompare(b.sku);
+                    return b.finalPoQty - a.finalPoQty;
+                }}
             />
         </div>
     );
