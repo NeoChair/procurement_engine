@@ -5,13 +5,19 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
+import { WH_GROUPS, type WhKey } from "@/lib/calc/shipCalc";
 
 const WAREHOUSES = ["CA", "GA", "NJ", "TX", "WF"] as const;
 type Warehouse = (typeof WAREHOUSES)[number];
 
-const BASE_SOURCE = "LY_FORWARD_63D_ACTL_SCALED_TO_120";
-
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
+
+function sumParts(r: SummaryRow, parts: string[], suffix: string): number {
+    return parts.reduce((acc, p) => {
+        const key = `${p}_${suffix}` as keyof SummaryRow;
+        return acc + ((r[key] as number) ?? 0);
+    }, 0);
+}
 
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
     (mainSkuData as MainSkuRecord[]).map((record) => [record.SKU, record])
@@ -32,7 +38,6 @@ type PoRow = {
     producing: string;
     warehouse: Warehouse;
     actl63: number;
-    baseSource: string;
     last7: number;
     curr7: number;
     last28: number;
@@ -46,20 +51,28 @@ function n(v: number | undefined): string {
 }
 
 function expandRow(row: SummaryRow, wh: Warehouse): PoRow {
+    const { parts, lt } = WH_GROUPS[wh as WhKey];
+    const last56 = sumParts(row, parts, "LAST_YEAR_2MONTH_SALES_QTY");
+
+    // 발주 Table 2(poCalc.ts)와 동일하게 창고그룹별 ACTL 합산, 0이면 56일 트레일링 대체
+    let actl = sumParts(row, parts, "LAST_YEAR_ACTL_SALES_QTY");
+    if (actl === 0) {
+        actl = (last56 / 56) * lt;
+    }
+
     return {
         key: `${row.SKU}__${wh}`,
         sku: row.SKU,
         factory: factoryOf(row.SKU),
         producing: producingOf(row.SKU),
         warehouse: wh,
-        actl63: (row.LAST_YEAR_ACTL_SALES_QTY as number) ?? 0,
-        baseSource: BASE_SOURCE,
-        last7:  (row[`${wh}_LAST_YEAR_1WEEK_SALES_QTY`]  as number) ?? 0,
-        curr7:  (row[`${wh}_CURR_YEAR_1WEEK_SALES_QTY`]  as number) ?? 0,
-        last28: (row[`${wh}_LAST_YEAR_1MONTH_SALES_QTY`] as number) ?? 0,
-        curr28: (row[`${wh}_CURR_YEAR_1MONTH_SALES_QTY`] as number) ?? 0,
-        last56: (row[`${wh}_LAST_YEAR_2MONTH_SALES_QTY`] as number) ?? 0,
-        curr56: (row[`${wh}_CURR_YEAR_2MONTH_SALES_QTY`] as number) ?? 0,
+        actl63: Math.round(actl),
+        last7:  sumParts(row, parts, "LAST_YEAR_1WEEK_SALES_QTY"),
+        curr7:  sumParts(row, parts, "CURR_YEAR_1WEEK_SALES_QTY"),
+        last28: sumParts(row, parts, "LAST_YEAR_1MONTH_SALES_QTY"),
+        curr28: sumParts(row, parts, "CURR_YEAR_1MONTH_SALES_QTY"),
+        last56,
+        curr56: sumParts(row, parts, "CURR_YEAR_2MONTH_SALES_QTY"),
     };
 }
 
@@ -68,8 +81,7 @@ const COLUMNS: DataTableColumn<PoRow>[] = [
     { key: "FACTORY",   label: "제작공장",                  align: "left",  getValue: (row) => row.factory },
     { key: "PRODUCING", label: "생산여부",                  align: "left",  getValue: (row) => row.producing },
     { key: "WAREHOUSE", label: "창고",                      align: "left",  getValue: (row) => row.warehouse },
-    { key: "ACTL_63",   label: "작년 동기간 실제판매량 63일", align: "right", getValue: (row) => row.actl63 ?? 0, render: (row) => n(row.actl63) },
-    { key: "BASE_SOURCE", label: "Base 소스",               align: "left",  getValue: (row) => row.baseSource },
+    { key: "ACTL_63",   label: "작년 동기간 실제판매량(창고 리드타임 기준)", align: "right", getValue: (row) => row.actl63 ?? 0, render: (row) => n(row.actl63) },
     { key: "LAST_1WEEK",  label: "작년 과거 7일",           align: "right", getValue: (row) => row.last7  ?? 0, render: (row) => n(row.last7) },
     { key: "CURR_1WEEK",  label: "올해 과거 7일",           align: "right", getValue: (row) => row.curr7  ?? 0, render: (row) => n(row.curr7) },
     { key: "LAST_28",     label: "작년 과거 28일",          align: "right", getValue: (row) => row.last28 ?? 0, render: (row) => n(row.last28) },
