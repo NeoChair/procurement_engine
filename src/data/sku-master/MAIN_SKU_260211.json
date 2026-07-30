@@ -1612,7 +1612,7 @@
   },
   {
     "SKU": "CHA-HC-MLW-BG",
-    "IsOn": "FALSE",
+    "IsOn": "TRUE",
     "Factory": "HR",
     "AT": "FALSE",
     "TX": "FALSE",
