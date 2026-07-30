@@ -162,7 +162,7 @@ export function computeShipTables(
             table2.push({
                 key: `${r.SKU}__${wh}__t2`, sku: r.SKU, factory, producing, wh,
                 oh: Math.round(oh), it: Math.round(it), shipPlan: Math.round(shipPlan),
-                daily: Math.round(daily), need28d, shipQty,
+                daily: Math.round(daily * 100) / 100, need28d, shipQty,
                 week2, week3, week4, week5,
                 rebalanceFlag: "", shock,
             });
