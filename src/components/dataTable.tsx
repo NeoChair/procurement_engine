@@ -29,6 +29,7 @@ export default function DataTable<T>({
     headerHeight = 36,
     rowClassName,
     fileName,
+    defaultSort,
 }: {
     columns: DataTableColumn<T>[];
     rows: T[];
@@ -38,12 +39,18 @@ export default function DataTable<T>({
     headerHeight?: number;
     rowClassName?: (row: T) => string;
     fileName?: string;
+    /** 사용자가 컬럼을 직접 정렬하기 전(sort===null)에만 적용되는 기본 정렬 비교함수. rows 자체는 항상 안정적인
+     * 순서(예: SKU→창고)로 넘겨야, 컬럼 정렬 중 계산모드가 바뀌어도 동점 행 순서가 흔들리지 않는다. */
+    defaultSort?: (a: T, b: T) => number;
 }) {
     const [sort, setSort] = useState<SortState>(null);
     // 마지막 컬럼을 제외한 나머지 컬럼의 폭(퍼센트). 마지막 컬럼은 잔여 100%를 차지한다.
-    const [colPercents, setColPercents] = useState<number[]>(() =>
-        columns.slice(0, -1).map(() => 100 / columns.length)
-    );
+    // SKU는 "CHA-MS-CPS-BK-2PK" 같은 긴 값이 안 잘리도록 넓게, 제작공장은 값이 짧아(HR/MT 등) 좁게 시작한다.
+    const [colPercents, setColPercents] = useState<number[]>(() => {
+        const weight = (key: string) => (key === "SKU" ? 2.0 : key === "FACTORY" ? 0.8 : 1);
+        const totalWeight = columns.reduce((s, c) => s + weight(c.key), 0);
+        return columns.slice(0, -1).map((c) => (weight(c.key) / totalWeight) * 100);
+    });
     const tableRef = useRef<HTMLTableElement>(null);
     const resizingRef = useRef<{ index: number; startX: number; startCur: number; startNext: number } | null>(null);
 
@@ -54,7 +61,10 @@ export default function DataTable<T>({
     }, [colPercents]);
 
     const sortedRows = useMemo(() => {
-        if (!sort) return rows;
+        if (!sort) {
+            if (!defaultSort) return rows;
+            return [...rows].sort(defaultSort);
+        }
         const column = columns.find((c) => c.key === sort.key);
         if (!column) return rows;
         const dir = sort.direction === "asc" ? 1 : -1;
@@ -64,7 +74,7 @@ export default function DataTable<T>({
             if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
             return String(va).localeCompare(String(vb)) * dir;
         });
-    }, [rows, sort, columns]);
+    }, [rows, sort, columns, defaultSort]);
 
     function handleSort(key: string) {
         setSort((prev) => {
