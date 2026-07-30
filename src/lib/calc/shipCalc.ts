@@ -15,7 +15,7 @@ export type WhKey = "CA" | "NJ" | "GA" | "TX" | "WF";
 export const WH_GROUPS: Record<WhKey, { parts: string[]; lt: number }> = {
     CA:  { parts: ["CA", "CA2"], lt: 63  },
     NJ:  { parts: ["NJ"],        lt: 77  },
-    GA:  { parts: ["GA", "GA2"], lt: 77  },
+    GA:  { parts: ["GA", "GA2", "SC"], lt: 77  },
     TX:  { parts: ["TX"],        lt: 77  },
     WF:  { parts: ["WF"],        lt: 115 },
 };
