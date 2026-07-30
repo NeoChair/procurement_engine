@@ -389,8 +389,8 @@ export default function SidebarFilter({
                     {filters.rebalance ? (
                         <div className="flex flex-col gap-1">
                             <span className="text-sm font-bold text-[#ff4b4b]">⚡ 재배분 활성화됨</span>
-                            <span className="text-sm text-gray-400">📌 Target: CA 18% · TX 20% · NJ 30% · GA 32%</span>
-                            <span className="text-sm text-gray-400">📌 ±5% 범위 밖 SKU → 자동 재배분</span>
+                            <span className="text-sm text-gray-400">📌 Target: CA 20% · TX 20% · NJ 30% · GA 30%</span>
+                            <span className="text-sm text-gray-400">📌 ±0% 범위 밖 SKU → 자동 재배분</span>
                             <span className="text-sm text-gray-400">📌 기준선적량(28일Need)이 base, 재배분은 보정 레이어</span>
                         </div>
                     ) : (

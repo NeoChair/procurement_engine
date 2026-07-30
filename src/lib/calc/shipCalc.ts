@@ -6,6 +6,9 @@ import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode } fro
 // ── Shock Warning (Floor 기반) ──
 const SHOCK_MIN_SALES_7D = 3;
 const SHOCK_DAYS_COVER = 7;
+const fixed42daysSKU = ["CHA-MS-CPS-BK", "CHA-MS-M28-BK", "CHA-MS-M28-PK", "CHA-MS-M28-IV", 
+                        "CHA-MS-DBS-BK", "CHA-MS-NEC-BK", "CHA-MS-NEC-PK", "CHA-MS-NEC-IV"]
+
 
 export type WhKey = "CA" | "NJ" | "GA" | "TX" | "WF";
 
@@ -134,7 +137,8 @@ export function computeShipTables(
                 daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / lt;
             }
 
-            const need28d = Math.round(daily * 28);
+            const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
+            const need28d = Math.round(daily * safetyDays);
             const predPeriod = daily * lt;
 
             const oh = sumParts(r, parts, "STOCK");

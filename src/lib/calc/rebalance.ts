@@ -5,10 +5,10 @@
 export type RatioWh = "CA" | "TX" | "NJ" | "GA";
 
 export const TARGET_RATIO: Record<RatioWh, number> = {
-    CA: 0.18,
+    CA: 0.20,
     TX: 0.20,
     NJ: 0.30,
-    GA: 0.32,
+    GA: 0.30,
 };
 
 export const RATIO_WAREHOUSES: RatioWh[] = ["CA", "TX", "NJ", "GA"];
