@@ -13,7 +13,10 @@ export const TARGET_RATIO: Record<RatioWh, number> = {
 
 export const RATIO_WAREHOUSES: RatioWh[] = ["CA", "TX", "NJ", "GA"];
 
-export type Week1AllocMode = "target_ratio" | "inventory_aware";
+export type Week1AllocMode = "target_ratio" | "actual_ratio" | "inventory_aware";
+
+/** SKU별 최근 84일 실제 창고별 출고 비율 (합계=1). 데이터가 없는 창고는 undefined/0. */
+export type ActualRatio = Partial<Record<RatioWh, number | null>>;
 
 export type RebalanceWhInput = {
     wh: RatioWh;
@@ -62,12 +65,30 @@ export type RebalanceResult = {
     zeroFlag: Record<RatioWh, boolean>;
     /** SKU 전체에 대해 Step2(Target Ratio 분배)가 적용됐는지 (분배할 base가 있으면 항상 적용) */
     gapFlag: boolean;
+    /** actual_ratio 모드인데 84일 실제 출고 데이터가 없어서 4개 창고 선적량을 전부 0으로 강제한 경우 */
+    noDataFlag: boolean;
 };
+
+/**
+ * actual_ratio 모드에서 쓸 기준 비율을 정한다. SKU의 84일 실제 출고 비율 합이 0보다 크면 그걸 쓴다.
+ * target_ratio/inventory_aware 모드는 항상 TARGET_RATIO. actual_ratio인데 해당 SKU의 84일 실제
+ * 출고 데이터가 없으면 null을 반환한다 (TARGET_RATIO로 대충 채우지 않고, 재배분 자체를 하지 않는다).
+ */
+function resolveBaseRatio(mode: Week1AllocMode, actualRatio?: ActualRatio | null): Record<RatioWh, number> | null {
+    if (mode !== "actual_ratio") return TARGET_RATIO;
+    if (!actualRatio) return null;
+    const sum = RATIO_WAREHOUSES.reduce((s, wh) => s + (actualRatio[wh] ?? 0), 0);
+    if (sum <= 0) return null;
+    const resolved = {} as Record<RatioWh, number>;
+    for (const wh of RATIO_WAREHOUSES) resolved[wh] = actualRatio[wh] ?? 0;
+    return resolved;
+}
 
 /** 단일 SKU에 대해 CA/TX/NJ/GA 4개 창고의 선적량을 재배분한다. WF는 대상 아님(호출부에서 별도 유지). */
 export function rebalanceSku(
     rows: RebalanceWhInput[],
     mode: Week1AllocMode,
+    actualRatio?: ActualRatio | null,
 ): RebalanceResult {
     const byWh = new Map(rows.map(r => [r.wh, r]));
     const result = {} as Record<RatioWh, number>;
@@ -77,6 +98,16 @@ export function rebalanceSku(
         zeroFlag[wh] = false;
     }
 
+    // target_ratio와 actual_ratio는 "어떤 비율을 기준으로 삼을지"만 다르고 이후 로직은 동일하다.
+    // actual_ratio인데 해당 SKU의 84일 실제 출고 데이터가 없으면 — 84일간 실제로 안 나간 창고 조합이니
+    // 이번 주 선적량도 0으로 본다 (기준선적량으로 대충 채우지 않음).
+    const baseRatio = resolveBaseRatio(mode, actualRatio);
+    if (baseRatio === null) {
+        const zeroResult = {} as Record<RatioWh, number>;
+        for (const wh of RATIO_WAREHOUSES) zeroResult[wh] = 0;
+        return { shipQty: zeroResult, zeroFlag, gapFlag: false, noDataFlag: true };
+    }
+
     // ── Step 1: Zero-Ship Case ──
     const totalNeed4wh = RATIO_WAREHOUSES.reduce((s, wh) => s + (byWh.get(wh)?.need28d ?? 0), 0);
     if (totalNeed4wh > 0) {
@@ -84,19 +115,19 @@ export function rebalanceSku(
             const r = byWh.get(wh);
             if (!r) continue;
             if (r.baseShip === 0 && r.oh === 0 && r.it === 0 && r.need28d === 0) {
-                result[wh] = Math.round(totalNeed4wh * TARGET_RATIO[wh]);
+                result[wh] = Math.round(totalNeed4wh * baseRatio[wh]);
                 zeroFlag[wh] = true;
             }
         }
     }
 
-    // ── Step 2: Target Ratio 직접분배 (cap 없음, 총량 보존) ──
+    // ── Step 2: Target/Actual Ratio 직접분배 (cap 없음, 총량 보존) ──
     const totalBaseShip = RATIO_WAREHOUSES.reduce((s, wh) => s + result[wh], 0);
-    if (totalBaseShip <= 0) return { shipQty: result, zeroFlag, gapFlag: false };
+    if (totalBaseShip <= 0) return { shipQty: result, zeroFlag, gapFlag: false, noDataFlag: false };
 
-    const ratioSum = RATIO_WAREHOUSES.reduce((s, wh) => s + TARGET_RATIO[wh], 0);
+    const ratioSum = RATIO_WAREHOUSES.reduce((s, wh) => s + baseRatio[wh], 0);
     const normTarget = {} as Record<RatioWh, number>;
-    for (const wh of RATIO_WAREHOUSES) normTarget[wh] = TARGET_RATIO[wh] / ratioSum;
+    for (const wh of RATIO_WAREHOUSES) normTarget[wh] = baseRatio[wh] / ratioSum;
 
     let rawAlloc: Record<RatioWh, number>;
 
@@ -127,5 +158,5 @@ export function rebalanceSku(
 
     const targetIntTotal = Math.round(totalBaseShip);
     const shipQty = largestRemainderInt(rawAlloc, targetIntTotal);
-    return { shipQty, zeroFlag, gapFlag: true };
+    return { shipQty, zeroFlag, gapFlag: true, noDataFlag: false };
 }

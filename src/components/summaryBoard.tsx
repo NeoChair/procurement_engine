@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { computePoCalc } from "@/lib/calc/poCalc";
 import { computeShipTables } from "@/lib/calc/shipCalc";
+import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { FilterState } from "@/components/sidebarFilters";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 
@@ -22,6 +23,7 @@ export default function SummaryBoard({
     onSnapshotDate?: (date: string | null) => void;
 }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
+    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -30,6 +32,7 @@ export default function SummaryBoard({
             .then(json => {
                 if (json.success) {
                     setRows(json.data as SummaryRow[]);
+                    setShipRatio84d(json.shipRatio84d ?? {});
                     onSnapshotDate?.(json.snapshotDate ?? null);
                 }
             })
@@ -66,7 +69,7 @@ export default function SummaryBoard({
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode);
+        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d);
         let calc = table2;
 
         if (filters.skuQuery) {
@@ -89,7 +92,7 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters]);
+    }, [rows, filters, shipRatio84d]);
 
     if (loading) {
         return (

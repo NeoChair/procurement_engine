@@ -1,7 +1,7 @@
 // 선적 계산 (28일 캡, 창고별)
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
-import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode } from "./rebalance";
+import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
 
 // ── Shock Warning (Floor 기반) ──
 const SHOCK_MIN_SALES_7D = 3;
@@ -100,6 +100,7 @@ export function computeShipTables(
     logicMode: LogicMode,
     rebalance: boolean = false,
     week1AllocMode: Week1AllocMode = "target_ratio",
+    shipRatio84d: Record<string, ActualRatio> = {},
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -170,14 +171,18 @@ export function computeShipTables(
     }
 
     if (rebalance) {
-        applyRebalance(table2, week1AllocMode);
+        applyRebalance(table2, week1AllocMode, shipRatio84d);
     }
 
     return { table1, table2 };
 }
 
-/** CA/TX/NJ/GA 4개 창고의 선적량을 SKU별로 Target Ratio 기준 재배분한다 (WF는 대상 아님, 그대로 유지). */
-function applyRebalance(table2: Ship2Row[], week1AllocMode: Week1AllocMode) {
+/** CA/TX/NJ/GA 4개 창고의 선적량을 SKU별로 Target/Actual Ratio 기준 재배분한다 (WF는 대상 아님, 그대로 유지). */
+function applyRebalance(
+    table2: Ship2Row[],
+    week1AllocMode: Week1AllocMode,
+    shipRatio84d: Record<string, ActualRatio>,
+) {
     const bySku = new Map<string, Ship2Row[]>();
     for (const row of table2) {
         if (!RATIO_WAREHOUSES.includes(row.wh as RatioWh)) continue;
@@ -186,7 +191,7 @@ function applyRebalance(table2: Ship2Row[], week1AllocMode: Week1AllocMode) {
         else bySku.set(row.sku, [row]);
     }
 
-    for (const rows of bySku.values()) {
+    for (const [sku, rows] of bySku.entries()) {
         const input = rows.map(r => ({
             wh: r.wh as RatioWh,
             oh: r.oh,
@@ -195,12 +200,12 @@ function applyRebalance(table2: Ship2Row[], week1AllocMode: Week1AllocMode) {
             need28d: r.need28d,
             baseShip: r.shipQty,
         }));
-        const { shipQty, zeroFlag, gapFlag } = rebalanceSku(input, week1AllocMode);
+        const { shipQty, zeroFlag, gapFlag, noDataFlag } = rebalanceSku(input, week1AllocMode, shipRatio84d[sku]);
         for (const row of rows) {
             const wh = row.wh as RatioWh;
             row.shipQty = shipQty[wh];
             const isZero = zeroFlag[wh];
-            row.rebalanceFlag = isZero && gapFlag ? "🔄 Zero+Gap" : isZero ? "🟦 Zero채움" : gapFlag ? "🟠 Gap조정" : "";
+            row.rebalanceFlag = noDataFlag ? "⛔ 84일 실적없음→0" : isZero && gapFlag ? "🔄 Zero+Gap" : isZero ? "🟦 Zero채움" : gapFlag ? "🟠 Gap조정" : "";
 
             // 재배분으로 week1(shipQty)이 바뀌었으므로, 그 값을 기준으로 2~5주차도 다시 굴린다.
             const avail = row.oh + row.it + row.shipPlan;
