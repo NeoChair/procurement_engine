@@ -408,6 +408,17 @@ export default function SidebarFilter({
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="radio"
+                                        id="week1-actual"
+                                        name="week1AllocMode"
+                                        checked={filters.week1AllocMode === "actual_ratio"}
+                                        onChange={() => update({ week1AllocMode: "actual_ratio" })}
+                                        className="accent-[#ff4b4b] w-[15px] h-[15px]"
+                                    />
+                                    <label htmlFor="week1-actual" className="text-sm text-gray-700">실 출고비율 (84일)</label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
                                         id="week1-target"
                                         name="week1AllocMode"
                                         checked={filters.week1AllocMode === "target_ratio"}

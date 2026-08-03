@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
 import { NextResponse } from "next/server";
+import sql from "mssql";
 
 export interface SummaryRow {
     OWNR_ETP_CD: string;
@@ -108,6 +109,49 @@ export interface SummaryRow {
     WF_SHIPPLAN_QTY: number;
 }
 
+/** SKU별 최근 84일(PST) 실제 CA/TX/NJ/GA 창고 출고 비율 (합계 = 1). */
+export type ShipRatio84d = {
+    CA: number;
+    TX: number;
+    NJ: number;
+    GA: number;
+};
+
+type WhShipRow = {
+    SKU: string;
+    CA_QTY: number;
+    TX_QTY: number;
+    NJ_QTY: number;
+    GA_QTY: number;
+};
+
+//출고 비율 쿼리
+const WH_SHIP_84D_QUERY = `
+    SELECT
+        pg.INVT_SKU AS SKU,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631') THEN o.QTY ELSE 0 END) AS CA_QTY,
+        SUM(CASE WHEN o.WAREHOUSE = '14636' THEN o.QTY ELSE 0 END) AS TX_QTY,
+        SUM(CASE WHEN o.WAREHOUSE = '14634' THEN o.QTY ELSE 0 END) AS NJ_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635') THEN o.QTY ELSE 0 END) AS GA_QTY
+    FROM [HGBC].[SD].[TB_ORD_DAIL] o
+    JOIN [HGBC].[SD].[TB_PROD_GROUP] pg ON o.ITM_ID = pg.ITM_ID
+    WHERE o.ORD_DE >= @cutoffDate
+      AND pg.INVT_SKU <> ''
+      AND o.WAREHOUSE IN ('14630', '14631', '14632', '14633', '14634', '14635', '14636')
+    GROUP BY pg.INVT_SKU
+`;
+
+/** 오늘(PST) 기준 daysAgo일 전 00:00:00(PST) 문자열을 반환한다. */
+function getPstCutoffDate(daysAgo: number): string {
+    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+    pstNow.setDate(pstNow.getDate() - daysAgo);
+    const y = pstNow.getFullYear();
+    const m = String(pstNow.getMonth() + 1).padStart(2, "0");
+    const d = String(pstNow.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d} 00:00:00`;
+}
+
+//SUMMARY QUERY
 const SUMMARY_QUERY = `
     WITH all_skus AS (
         SELECT DISTINCT SKU
@@ -287,12 +331,30 @@ export async function GET() {
         // 첫 번째 non-null 값을 찾는다.
         const snapshotDate = rows.find((r) => r.GATH_DT)?.GATH_DT ?? null;
 
-        console.log(`DB 조회: ${rows.length}개 SKU (기준일: ${snapshotDate})`);
+        const whShipResult = await db
+            .request()
+            .input("cutoffDate", sql.VarChar, getPstCutoffDate(84))
+            .query<WhShipRow>(WH_SHIP_84D_QUERY);
+
+        const shipRatio84d: Record<string, ShipRatio84d> = {};
+        for (const r of whShipResult.recordset) {
+            const total = r.CA_QTY + r.TX_QTY + r.NJ_QTY + r.GA_QTY;
+            if (total <= 0) continue;
+            shipRatio84d[r.SKU] = {
+                CA: r.CA_QTY / total,
+                TX: r.TX_QTY / total,
+                NJ: r.NJ_QTY / total,
+                GA: r.GA_QTY / total,
+            };
+        }
+
+        //console.log(shipRatio84d);
 
         return NextResponse.json({
             success: true,
             data: rows,
             snapshotDate,
+            shipRatio84d,
         });
     } catch (err) {
         console.error("DB 조회 오류:", err);

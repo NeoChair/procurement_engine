@@ -6,6 +6,7 @@ import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
 import { computeShipTables, type Ship2Row } from "@/lib/calc/shipCalc";
+import type { ActualRatio } from "@/lib/calc/rebalance";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -65,6 +66,7 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 
 export default function ShipTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
+    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +76,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
             .then(json => {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
+                setShipRatio84d(json.shipRatio84d ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -83,14 +86,14 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d);
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
         r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
         return r;
-    }, [rows, filters]);
+    }, [rows, filters, shipRatio84d]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
