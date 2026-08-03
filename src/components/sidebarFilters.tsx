@@ -230,6 +230,7 @@ const FACTORY_OPTIONS: Option[] = [
     { value: "GF", label: "GF" },
     { value: "MD", label: "MD" },
     { value: "YB", label: "YB" },
+    { value: "DMS", label: "DMS" },
 ];
 
 const WAREHOUSE_OPTIONS: Option[] = [
@@ -408,6 +409,17 @@ export default function SidebarFilter({
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="radio"
+                                        id="week1-target"
+                                        name="week1AllocMode"
+                                        checked={filters.week1AllocMode === "target_ratio"}
+                                        onChange={() => update({ week1AllocMode: "target_ratio" })}
+                                        className="accent-[#ff4b4b] w-[15px] h-[15px]"
+                                    />
+                                    <label htmlFor="week1-target" className="text-sm text-gray-700">목표비율</label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="radio"
                                         id="week1-actual"
                                         name="week1AllocMode"
                                         checked={filters.week1AllocMode === "actual_ratio"}
@@ -419,24 +431,13 @@ export default function SidebarFilter({
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="radio"
-                                        id="week1-target"
-                                        name="week1AllocMode"
-                                        checked={filters.week1AllocMode === "target_ratio"}
-                                        onChange={() => update({ week1AllocMode: "target_ratio" })}
-                                        className="accent-[#ff4b4b] w-[15px] h-[15px]"
-                                    />
-                                    <label htmlFor="week1-target" className="text-sm text-gray-700">목표비율 (현행)</label>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="radio"
                                         id="week1-inv"
                                         name="week1AllocMode"
                                         checked={filters.week1AllocMode === "inventory_aware"}
                                         onChange={() => update({ week1AllocMode: "inventory_aware" })}
                                         className="accent-[#ff4b4b] w-[15px] h-[15px]"
                                     />
-                                    <label htmlFor="week1-inv" className="text-sm text-gray-700">현재고기반 (쏠림완화)</label>
+                                    <label htmlFor="week1-inv" className="text-sm text-gray-700">현재고기반</label>
                                 </div>
                             </div>
                         </div>
