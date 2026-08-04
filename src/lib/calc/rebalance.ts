@@ -75,7 +75,8 @@ export type RebalanceResult = {
  * 출고 데이터가 없으면 null을 반환한다 (TARGET_RATIO로 대충 채우지 않고, 재배분 자체를 하지 않는다).
  */
 function resolveBaseRatio(mode: Week1AllocMode, actualRatio?: ActualRatio | null): Record<RatioWh, number> | null {
-    if (mode !== "actual_ratio") return TARGET_RATIO;
+    if (mode === "target_ratio") return TARGET_RATIO;
+    // actual_ratio, inventory_aware 둘 다 SKU의 84일 실제 출고 비율을 기준으로 삼는다.
     if (!actualRatio) return null;
     const sum = RATIO_WAREHOUSES.reduce((s, wh) => s + (actualRatio[wh] ?? 0), 0);
     if (sum <= 0) return null;

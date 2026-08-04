@@ -57,6 +57,8 @@ export type Ship2Row = {
     week5: number;
     rebalanceFlag: string;
     shock: boolean;
+    /** SKU의 84일 실제 출고 비율 중 이 창고 몫 (합계=1, RATIO_WAREHOUSES 대상 외에는 null) */
+    actualRatio: number | null;
 };
 
 /** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화 */
@@ -160,12 +162,16 @@ export function computeShipTables(
             const finalDd = Math.max(cy7 / 7, floorDd);
             const shock = daily > 0 && !(cy7 < SHOCK_MIN_SALES_7D && floorDd <= 0) && oh < SHOCK_DAYS_COVER * finalDd;
 
+            const actualRatio = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                ? shipRatio84d[r.SKU]?.[wh as RatioWh] ?? null
+                : null;
+
             table2.push({
                 key: `${r.SKU}__${wh}__t2`, sku: r.SKU, factory, producing, wh,
                 oh: Math.round(oh), it: Math.round(it), shipPlan: Math.round(shipPlan),
                 daily: Math.round(daily * 100) / 100, need28d, shipQty,
                 week2, week3, week4, week5,
-                rebalanceFlag: "", shock,
+                rebalanceFlag: "", shock, actualRatio,
             });
         }
     }
