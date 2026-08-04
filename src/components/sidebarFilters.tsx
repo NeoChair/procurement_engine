@@ -406,6 +406,8 @@ export default function SidebarFilter({
                         <div className="flex flex-col gap-2">
                             <label className="text-md font-medium text-gray-700">📐 1주차 배분 방식</label>
                             <div className="flex flex-col gap-1.5 rounded-md py-1">
+                                {/* 목표 고정 비율은 주석처리 
+                                
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="radio"
@@ -416,7 +418,7 @@ export default function SidebarFilter({
                                         className="accent-[#ff4b4b] w-[15px] h-[15px]"
                                     />
                                     <label htmlFor="week1-target" className="text-sm text-gray-700">목표비율</label>
-                                </div>
+                                </div> */}
                                 <div className="flex items-center gap-2">
                                     <input
                                         type="radio"

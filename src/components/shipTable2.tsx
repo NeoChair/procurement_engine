@@ -17,12 +17,16 @@ function n(v: number | undefined): string { return (v ?? 0).toLocaleString(); }
 function nd(v: number | undefined): string {
     return (v ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+function pct(v: number | null | undefined): string {
+    return v == null ? "-" : `${(v * 100).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+}
 
 const SHIP2_COLUMNS: DataTableColumn<Ship2Row>[] = [
     { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
     { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
     { key: "PROD",     label: "생산여부",          align: "left",  getValue: r => r.producing },
     { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
+    { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
     { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
     { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
     { key: "SP",       label: "선적계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
@@ -40,14 +44,6 @@ const SHIP2_COLUMNS: DataTableColumn<Ship2Row>[] = [
     { key: "WEEK3", label: "선적량 3주", align: "right", getValue: r => r.week3 ?? 0, render: r => n(r.week3) },
     { key: "WEEK4", label: "선적량 4주", align: "right", getValue: r => r.week4 ?? 0, render: r => n(r.week4) },
     { key: "WEEK5", label: "선적량 5주", align: "right", getValue: r => r.week5 ?? 0, render: r => n(r.week5) },
-    { key: "REBAL", label: "비율조정", align: "left", getValue: r => r.rebalanceFlag ?? "" },
-    {
-        key: "SHOCK",
-        label: "Shock 경고",
-        align: "left",
-        getValue: r => r.shock ? "⚠️ Shock" : "",
-        cellClassName: r => r.shock ? "!bg-[#fff3cd] text-[#856404] font-semibold" : "bg-inherit",
-    },
 ];
 
 function applyFilters<T extends { sku: string; factory: string; wh: string }>(
