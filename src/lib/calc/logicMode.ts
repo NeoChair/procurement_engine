@@ -1,6 +1,6 @@
 // SKU 규칙 + 성장계수 + 로직모드
 
-export type LogicMode = "default" | "all_normal" | "all_new";
+export type LogicMode = "default" | "all_normal" | "all_new" | "manual";
 
 const FORCE_NEW_SKU_PREFIXES = [
     "CHA-GM-NEX", "CHA-HC-CZPU", "CHA-MS-M28", "CHA-MS-DBSH",

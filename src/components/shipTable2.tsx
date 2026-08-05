@@ -5,8 +5,9 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship2Row, type ForecastMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
+import type { ForecastRow } from "@/app/api/forecast/route";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -21,30 +22,41 @@ function pct(v: number | null | undefined): string {
     return v == null ? "-" : `${(v * 100).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 }
 
-const SHIP2_COLUMNS: DataTableColumn<Ship2Row>[] = [
-    { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
-    { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
-    { key: "PROD",     label: "생산여부",          align: "left",  getValue: r => r.producing },
-    { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
-    { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
-    { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
-    { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
-    { key: "SP",       label: "선적계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
-    { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.daily ?? 0,     render: r => nd(r.daily) },
-    { key: "NEED28",   label: "28일치 예상출고량", align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
-    {
-        key: "SHIP_QTY",
-        label: "선적량",
-        align: "right",
-        getValue: r => r.shipQty,
-        render: r => n(r.shipQty),
-        cellClassName: r => (r.shipQty ?? 0) > 0 ? "!bg-[#ffe0e0] text-[#c62828] font-semibold" : "bg-inherit",
-    },
-    { key: "WEEK2", label: "선적량 2주", align: "right", getValue: r => r.week2 ?? 0, render: r => n(r.week2) },
-    { key: "WEEK3", label: "선적량 3주", align: "right", getValue: r => r.week3 ?? 0, render: r => n(r.week3) },
-    { key: "WEEK4", label: "선적량 4주", align: "right", getValue: r => r.week4 ?? 0, render: r => n(r.week4) },
-    { key: "WEEK5", label: "선적량 5주", align: "right", getValue: r => r.week5 ?? 0, render: r => n(r.week5) },
-];
+function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn<Ship2Row>[] {
+    const columns: DataTableColumn<Ship2Row>[] = [
+        { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
+        { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
+        { key: "PROD",     label: "생산여부",          align: "left",  getValue: r => r.producing },
+        { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
+        { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
+        { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
+        { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
+        { key: "SP",       label: "선적계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
+        { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.daily ?? 0,     render: r => nd(r.daily) },
+    ];
+
+    if (logicMode === "manual") {
+        columns.push({ key: "MANUAL_DAILY", label: "매뉴얼 1일치 예상출고량", align: "right", getValue: r => r.manualDaily ?? 0, render: r => r.manualDaily == null ? "-" : nd(r.manualDaily) });
+    }
+
+    columns.push(
+        { key: "NEED28",   label: "28일치 예상출고량", align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
+        {
+            key: "SHIP_QTY",
+            label: "선적량",
+            align: "right",
+            getValue: r => r.shipQty,
+            render: r => n(r.shipQty),
+            cellClassName: r => (r.shipQty ?? 0) > 0 ? "!bg-[#ffe0e0] text-[#c62828] font-semibold" : "bg-inherit",
+        },
+        { key: "WEEK2", label: "선적량 2주", align: "right", getValue: r => r.week2 ?? 0, render: r => n(r.week2) },
+        { key: "WEEK3", label: "선적량 3주", align: "right", getValue: r => r.week3 ?? 0, render: r => n(r.week3) },
+        { key: "WEEK4", label: "선적량 4주", align: "right", getValue: r => r.week4 ?? 0, render: r => n(r.week4) },
+        { key: "WEEK5", label: "선적량 5주", align: "right", getValue: r => r.week5 ?? 0, render: r => n(r.week5) },
+    );
+
+    return columns;
+}
 
 function applyFilters<T extends { sku: string; factory: string; wh: string }>(
     rows: T[],
@@ -63,6 +75,7 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 export default function ShipTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
+    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -76,20 +89,33 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
+
+        fetch("/api/forecast")
+            .then(r => r.json())
+            .then(json => {
+                if (!json.success) return;
+                const map: ForecastMap = {};
+                for (const row of json.data as ForecastRow[]) {
+                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
+                }
+                setForecastMap(map);
+            });
     }, []);
 
     const displayRows = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap);
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
         r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
         return r;
-    }, [rows, filters, shipRatio84d]);
+    }, [rows, filters, shipRatio84d, forecastMap]);
+
+    const columns = useMemo(() => buildShip2Columns(filters.logicMode), [filters.logicMode]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
@@ -97,7 +123,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     return (
         <div className="w-full px-2 py-4">
             <DataTable
-                columns={SHIP2_COLUMNS}
+                columns={columns}
                 rows={displayRows}
                 rowKey={r => r.key}
                 fileName="선적_Table2"

@@ -7,6 +7,7 @@ import ShipTable1 from "@/components/shipTable1";
 import ShipTable2 from "@/components/shipTable2";
 import SummaryBoard from "@/components/summaryBoard";
 import SidebarFilter, { type FilterState } from "@/components/sidebarFilters";
+import ForecastManage from "@/components/forecastManage";
 
 const DEFAULT_FILTERS: FilterState = {
     skuQuery: "",
@@ -14,7 +15,7 @@ const DEFAULT_FILTERS: FilterState = {
     warehouse: [],
     logicMode: "default",
     rebalance: false,
-    week1AllocMode: "target_ratio",
+    week1AllocMode: "actual_ratio",
 };
 
 export default function Home() {
@@ -100,6 +101,11 @@ export default function Home() {
                             </div>
                         )}
                     </div>
+
+                    <hr className="border-gray-300 my-6" />
+
+                    <h2 className="text-3xl font-bold mb-4">📝 매뉴얼 발주예측(FRCST_QTY)</h2>
+                    <ForecastManage />
                 </div>
             </div>
         </div>
