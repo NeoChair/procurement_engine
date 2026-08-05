@@ -245,6 +245,7 @@ const LOGIC_MODE_OPTIONS: Option[] = [
     { value: "default", label: "Default (자동 분류 유지)" },
     { value: "all_normal", label: "Normal (일반 강제)" },
     { value: "all_new", label: "New (신제품 강제)" },
+    { value: "manual", label: "Manual (수기 입력값)" },
 ];
 
 const MIN_WIDTH = 288;
