@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
-import { WH_GROUPS, MANUAL_REFERENCE_DATE, manualTargetYm } from "@/lib/calc/shipCalc";
+import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
+import { PO_HORIZON_DAYS } from "@/lib/calc/poCalc";
 
 export type FilterState = {
     skuQuery: string;
@@ -271,11 +272,22 @@ export default function SidebarFilter({
     const [language, setLanguage] = useState("kr");
     const [width, setWidth] = useState(DEFAULT_WIDTH);
     const [collapsed, setCollapsed] = useState(false);
+    const [availableYms, setAvailableYms] = useState<Set<string>>(new Set());
     const isResizing = useRef(false);
 
     function update(partial: Partial<FilterState>) {
         onFilterChange({ ...filters, ...partial });
     }
+
+    useEffect(() => {
+        fetch("/api/forecast")
+            .then(r => r.json())
+            .then(json => {
+                if (!json.success) return;
+                const yms = new Set<string>((json.data as { YEAR_MONTH: string }[]).map(r => r.YEAR_MONTH));
+                setAvailableYms(yms);
+            });
+    }, []);
 
     useEffect(() => {
         function handleMouseMove(e: MouseEvent) {
@@ -477,14 +489,29 @@ export default function SidebarFilter({
                         ))}
                     </div>
 
-                    {filters.logicMode === "manual" && (
-                        <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
-                            <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 {formatDate(MANUAL_REFERENCE_DATE)} 기준 적용 YM</span>
-                            <span className="text-sm text-gray-500">📌 CA({WH_GROUPS.CA.lt}일): {formatYm(manualTargetYm(WH_GROUPS.CA.lt))}</span>
-                            <span className="text-sm text-gray-500">📌 NJ/GA/TX({WH_GROUPS.NJ.lt}일): {formatYm(manualTargetYm(WH_GROUPS.NJ.lt))}</span>
-                            <span className="text-sm text-gray-500">📌 WF: 매뉴얼 미적용</span>
-                        </div>
-                    )}
+                    {filters.logicMode === "manual" && (() => {
+                        const poYm = manualTargetYm(PO_HORIZON_DAYS);
+                        const caYm = manualTargetYm(WH_GROUPS.CA.lt);
+                        const njYm = manualTargetYm(WH_GROUPS.NJ.lt);
+                        const poHasData = availableYms.has(poYm);
+                        const caHasData = availableYms.has(caYm);
+                        const njHasData = availableYms.has(njYm);
+                        return (
+                            <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
+                                <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 {formatDate(getManualReferenceDate())} 기준 적용 YM</span>
+                                <span className="text-sm text-gray-500">
+                                    📌 발주({PO_HORIZON_DAYS}일): {poHasData ? formatYm(poYm) : "데이터 없음, 미적용"}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    📌 선적 CA({WH_GROUPS.CA.lt}일): {caHasData ? formatYm(caYm) : "데이터 없음, 미적용"}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    📌 선적 NJ/GA/TX({WH_GROUPS.NJ.lt}일): {njHasData ? formatYm(njYm) : "데이터 없음, 미적용"}
+                                </span>
+                                <span className="text-sm text-gray-500">📌 WF: 매뉴얼 미적용</span>
+                            </div>
+                        );
+                    })()}
                 </div>
             </div>
             </div>

@@ -15,7 +15,7 @@ const DEFAULT_FILTERS: FilterState = {
     warehouse: [],
     logicMode: "default",
     rebalance: false,
-    week1AllocMode: "target_ratio",
+    week1AllocMode: "actual_ratio",
 };
 
 export default function Home() {

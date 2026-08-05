@@ -20,6 +20,57 @@ export const WH_GROUPS: Record<WhKey, { parts: string[]; lt: number }> = {
     WF:  { parts: ["WF"],        lt: 115 },
 };
 
+/** SKU별 매뉴얼 예측치. YEAR_MONTH("YYYYMM") -> FRCST_STOCK(그 달 총 예측수량). */
+export type ForecastMap = Record<string, Record<string, number>>;
+
+/** 오늘(America/Los_Angeles, PST/PDT 자동 적용) 자정 기준 Date. Manual 모드 기준일로 쓴다. */
+export function getManualReferenceDate(): Date {
+    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+    pstNow.setHours(0, 0, 0, 0);
+    return pstNow;
+    // return new Date(2026, 9, 23); // 테스트용 하드코딩 기준일 — 위 return을 주석처리하고 이 줄 주석 해제해서 사용
+}
+
+function addDays(base: Date, days: number): Date {
+    const d = new Date(base);
+    d.setDate(d.getDate() + days);
+    return d;
+}
+
+function ymFromDate(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    return `${y}${m}`;
+}
+
+/** Manual 모드에서 기준일(오늘 PST/PDT) + 리드타임(lt)이 실제로 가리키는 YM("YYYYMM"). 사이드바 안내 표시용. */
+export function manualTargetYm(lt: number): string {
+    return ymFromDate(addDays(getManualReferenceDate(), lt));
+}
+
+/**
+ * 매뉴얼 계산모드에서 쓸 창고별 일 예상판매량. WF는 실출고비율(RATIO_WAREHOUSES) 대상이 아니므로 항상 null(미적용).
+ * 기준일 + 창고 리드타임(lt)이 속한 월의 SKU 매뉴얼 예측치(FRCST_STOCK)를 그 창고의 84일 실출고비율만큼
+ * 떼어낸 값을 그대로 쓴다(일수로 나누지 않음) — 월말 몰림 등으로 실제 하루 소진량이 균등하지 않기 때문에,
+ * 평균 일량으로 스무딩하지 말고 입력값을 그대로 반영하기로 함. 예측치나 실출고비율이 없으면 null(기존 엔진값으로 폴백).
+ */
+export function manualDailyForWh(
+    sku: string,
+    wh: WhKey,
+    lt: number,
+    forecastMap: ForecastMap,
+    shipRatio84d: Record<string, ActualRatio>,
+): number | null {
+    if (!RATIO_WAREHOUSES.includes(wh as RatioWh)) return null; // WF 제외
+
+    const targetYm = manualTargetYm(lt);
+    const frcstQty = forecastMap[sku]?.[targetYm];
+    const ratio = shipRatio84d[sku]?.[wh as RatioWh];
+    if (frcstQty == null || ratio == null) return null;
+
+    return frcstQty * ratio;
+}
+
 function sumParts(r: SummaryRow, parts: string[], suffix: string): number {
     return parts.reduce((acc, p) => {
         const key = `${p}_${suffix}` as keyof SummaryRow;
@@ -49,6 +100,8 @@ export type Ship2Row = {
     it: number;
     shipPlan: number;
     daily: number;
+    /** Manual 계산모드에서 매뉴얼 예측치 기반으로 환산한 일 예상판매량. 해당 창고/SKU에 매뉴얼 데이터가 없으면 null(daily로 폴백). */
+    manualDaily: number | null;
     need28d: number;
     shipQty: number;
     week2: number;
@@ -73,13 +126,17 @@ function floorDailyDemand(cy7: number, cy28: number, cy56: number): number {
     return 0;
 }
 
-/** 다음 4주(2~5주차) 선적량을 롤링 계산한다: 이전 예상재고 + 이전 선적 - 7일 소비. */
+/**
+ * 다음 4주(2~5주차) 선적량을 롤링 계산한다: 이전 예상재고 + 이전 선적 - 7일 소비.
+ * capEnabled=false면 need28 캡을 씌우지 않고 raw 부족분을 그대로 선적량으로 쓴다(Manual 모드용).
+ */
 function rollMultiWeek(
     baseAvail: number,
     daily: number,
     lt: number,
     need28: number,
     week1Ship: number,
+    capEnabled: boolean = true,
 ): { week2: number; week3: number; week4: number; week5: number } {
     const weeklyConsumption = daily * 7;
     let prevProjected = Math.max(0, baseAvail - daily * lt);
@@ -88,7 +145,8 @@ function rollMultiWeek(
     for (let i = 0; i < 4; i++) {
         const availThisWeek = prevProjected + prevShip;
         const projectedThisWeek = availThisWeek - weeklyConsumption;
-        const shipK = Math.round(Math.min(Math.max(0, need28 - projectedThisWeek), Math.max(0, need28)));
+        const rawWeek = Math.max(0, need28 - projectedThisWeek);
+        const shipK = Math.round(capEnabled ? Math.min(rawWeek, Math.max(0, need28)) : rawWeek);
         weeks.push(shipK);
         prevProjected = Math.max(0, projectedThisWeek);
         prevShip = shipK;
@@ -103,6 +161,7 @@ export function computeShipTables(
     rebalance: boolean = false,
     week1AllocMode: Week1AllocMode = "target_ratio",
     shipRatio84d: Record<string, ActualRatio> = {},
+    forecastMap: ForecastMap = {},
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -140,9 +199,17 @@ export function computeShipTables(
                 daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / lt;
             }
 
+            const manualDaily = logicMode === "manual"
+                ? manualDailyForWh(r.SKU, wh, lt, forecastMap, shipRatio84d)
+                : null;
+            // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체하고, need28d 캡도 없앤다
+            // (사람이 직접 입력한 값이니 자동 엔진의 안전 상한을 적용하지 않고 raw 부족분을 그대로 반영).
+            const effectiveDaily = manualDaily ?? daily;
+            const usingManual = manualDaily != null;
+
             const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
-            const need28d = Math.round(daily * safetyDays);
-            const predPeriod = daily * lt;
+            const need28d = Math.round(effectiveDaily * safetyDays);
+            const predPeriod = effectiveDaily * lt;
 
             const oh = sumParts(r, parts, "STOCK");
             const it = sumParts(r, parts, "INTRANSIT_STOCK");
@@ -153,9 +220,11 @@ export function computeShipTables(
             const avail = oh + it + shipPlan;
             const projectedAfterPeriod = avail - predPeriod;
             const rawShip = Math.max(0, need28d - projectedAfterPeriod);
-            const shipQty = Math.round(Math.min(rawShip, Math.max(0, need28d)));
+            const shipQty = usingManual
+                ? Math.round(rawShip)
+                : Math.round(Math.min(rawShip, Math.max(0, need28d)));
 
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, daily, lt, need28d, shipQty);
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, !usingManual);
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
             const floorDd = floorDailyDemand(cy7, cy28, cy56);
@@ -169,7 +238,9 @@ export function computeShipTables(
             table2.push({
                 key: `${r.SKU}__${wh}__t2`, sku: r.SKU, factory, producing, wh,
                 oh: Math.round(oh), it: Math.round(it), shipPlan: Math.round(shipPlan),
-                daily: Math.round(daily * 100) / 100, need28d, shipQty,
+                daily: Math.round(daily * 100) / 100,
+                manualDaily: manualDaily == null ? null : Math.round(manualDaily * 100) / 100,
+                need28d, shipQty,
                 week2, week3, week4, week5,
                 rebalanceFlag: "", shock, actualRatio,
             });
