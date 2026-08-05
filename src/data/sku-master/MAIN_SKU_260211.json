@@ -864,6 +864,42 @@
     "NJ": "TRUE"
   },
   {
+    "SKU": "CHA-GM-ABT-PUBK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-ABT-PUBR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-ABT-FBBL",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-GM-ABT-FBGR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
     "SKU": "CHA-HC-CZY-BG",
     "IsOn": "TRUE",
     "Factory": "HR",

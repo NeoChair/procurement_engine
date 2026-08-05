@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { computePoCalc } from "@/lib/calc/poCalc";
-import { computeShipTables } from "@/lib/calc/shipCalc";
+import { computeShipTables, type ForecastMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { FilterState } from "@/components/sidebarFilters";
+import type { ForecastRow } from "@/app/api/forecast/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
@@ -24,6 +25,7 @@ export default function SummaryBoard({
 }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
+    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -37,11 +39,22 @@ export default function SummaryBoard({
                 }
             })
             .finally(() => setLoading(false));
+
+        fetch("/api/forecast")
+            .then(r => r.json())
+            .then(json => {
+                if (!json.success) return;
+                const map: ForecastMap = {};
+                for (const row of json.data as ForecastRow[]) {
+                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
+                }
+                setForecastMap(map);
+            });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const poSummary = useMemo(() => {
-        let calc = computePoCalc(rows, filters.logicMode);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap);
 
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
@@ -63,13 +76,13 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters]);
+    }, [rows, filters, shipRatio84d, forecastMap]);
 
     const shipSummary = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d);
+        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap);
         let calc = table2;
 
         if (filters.skuQuery) {
@@ -92,7 +105,7 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters, shipRatio84d]);
+    }, [rows, filters, shipRatio84d, forecastMap]);
 
     if (loading) {
         return (

@@ -1,10 +1,11 @@
 // 발주 계산 — 창고별 일 예상판매량(Daily, 선적 엔진과 동일 로직) 기반
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
-import { WH_GROUPS, type WhKey } from "./shipCalc";
+import { WH_GROUPS, type WhKey, manualDailyForWh, type ForecastMap } from "./shipCalc";
+import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
 
 const PO_NEED_DAYS = 45;
-const PO_HORIZON_DAYS = 120;
+export const PO_HORIZON_DAYS = 120;
 
 export type PoCalcRow = {
     key: string;
@@ -14,6 +15,10 @@ export type PoCalcRow = {
     it: number;
     shipPlan: number;
     daily: number;
+    /** Manual 계산모드에서 매뉴얼 예측치 기반으로 환산한 일 예상판매량. 매뉴얼 데이터가 없으면 null(daily로 폴백). */
+    manualDaily: number | null;
+    /** SKU의 84일 실제 출고 비율 중 이 창고 몫 (합계=1, RATIO_WAREHOUSES 대상 외에는 null) */
+    actualRatio: number | null;
     poPred120: number;
     need45d: number;
     projected120d: number;
@@ -27,7 +32,12 @@ function sumParts(r: SummaryRow, parts: string[], suffix: string): number {
     }, 0);
 }
 
-export function computePoCalc(rows: SummaryRow[], logicMode: LogicMode): PoCalcRow[] {
+export function computePoCalc(
+    rows: SummaryRow[],
+    logicMode: LogicMode,
+    shipRatio84d: Record<string, ActualRatio> = {},
+    forecastMap: ForecastMap = {},
+): PoCalcRow[] {
     const result: PoCalcRow[] = [];
 
     for (const r of rows) {
@@ -55,16 +65,32 @@ export function computePoCalc(rows: SummaryRow[], logicMode: LogicMode): PoCalcR
                 daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / lt;
             }
 
+            // 발주는 창고 리드타임(lt)이 아니라 PO_HORIZON_DAYS(120일) 기준으로 미래를 내다보므로,
+            // 매뉴얼 예측치 대상월도 lt가 아니라 PO_HORIZON_DAYS로 계산해야 한다(선적 엔진과는 기준이 다름).
+            const manualDaily = logicMode === "manual"
+                ? manualDailyForWh(r.SKU, wh, PO_HORIZON_DAYS, forecastMap, shipRatio84d)
+                : null;
+            // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체하고, need45d 캡도 없앤다
+            // (사람이 직접 입력한 값이니 자동 엔진의 안전 상한을 적용하지 않고 raw 부족분을 그대로 반영).
+            const effectiveDaily = manualDaily ?? daily;
+            const usingManual = manualDaily != null;
+
+            const actualRatio = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                ? shipRatio84d[r.SKU]?.[wh as RatioWh] ?? null
+                : null;
+
             const oh = sumParts(r, parts, "STOCK");
             const it = sumParts(r, parts, "INTRANSIT_STOCK");
             const shipPlan = sumParts(r, parts, "SHIPPLAN_QTY") +
                 (wh === "CA" ? ((r.CA1_SHIPPLAN_QTY as number) ?? 0) : 0);
 
-            const need45d = daily * PO_NEED_DAYS;
-            const poPred120 = daily * PO_HORIZON_DAYS;
+            const need45d = effectiveDaily * PO_NEED_DAYS;
+            const poPred120 = effectiveDaily * PO_HORIZON_DAYS;
             const projected120d = (oh + it + shipPlan) - poPred120;
             const rawPo = Math.max(0, need45d - projected120d);
-            const finalPoQty = Math.round(Math.min(rawPo, Math.max(0, need45d)));
+            const finalPoQty = usingManual
+                ? Math.round(rawPo)
+                : Math.round(Math.min(rawPo, Math.max(0, need45d)));
 
             result.push({
                 key: `${r.SKU}__${wh}`,
@@ -74,6 +100,8 @@ export function computePoCalc(rows: SummaryRow[], logicMode: LogicMode): PoCalcR
                 it: Math.round(it),
                 shipPlan: Math.round(shipPlan),
                 daily: Math.round(daily * 100) / 100,
+                manualDaily: manualDaily == null ? null : Math.round(manualDaily * 100) / 100,
+                actualRatio,
                 poPred120: Math.round(poPred120),
                 need45d: Math.round(need45d),
                 projected120d: Math.round(projected120d),
