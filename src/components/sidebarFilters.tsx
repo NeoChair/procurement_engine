@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
+import { WH_GROUPS, MANUAL_REFERENCE_DATE, manualTargetYm } from "@/lib/calc/shipCalc";
 
 export type FilterState = {
     skuQuery: string;
@@ -248,6 +249,14 @@ const LOGIC_MODE_OPTIONS: Option[] = [
     { value: "manual", label: "Manual (수기 입력값)" },
 ];
 
+function formatYm(ym: string): string {
+    return `${ym.slice(0, 4)}년 ${Number(ym.slice(4, 6))}월`;
+}
+
+function formatDate(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 const MIN_WIDTH = 288;
 const MAX_WIDTH = 600;
 const DEFAULT_WIDTH = 300;
@@ -467,6 +476,15 @@ export default function SidebarFilter({
                             </div>
                         ))}
                     </div>
+
+                    {filters.logicMode === "manual" && (
+                        <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
+                            <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 {formatDate(MANUAL_REFERENCE_DATE)} 기준 적용 YM</span>
+                            <span className="text-sm text-gray-500">📌 CA({WH_GROUPS.CA.lt}일): {formatYm(manualTargetYm(WH_GROUPS.CA.lt))}</span>
+                            <span className="text-sm text-gray-500">📌 NJ/GA/TX({WH_GROUPS.NJ.lt}일): {formatYm(manualTargetYm(WH_GROUPS.NJ.lt))}</span>
+                            <span className="text-sm text-gray-500">📌 WF: 매뉴얼 미적용</span>
+                        </div>
+                    )}
                 </div>
             </div>
             </div>
