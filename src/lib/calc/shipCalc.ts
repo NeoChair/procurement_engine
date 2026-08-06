@@ -28,7 +28,7 @@ export function getManualReferenceDate(): Date {
     const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
     pstNow.setHours(0, 0, 0, 0);
     return pstNow;
-    // return new Date(2026, 9, 23); // 테스트용 하드코딩 기준일 — 위 return을 주석처리하고 이 줄 주석 해제해서 사용
+    //return new Date(2026, 9, 23);
 }
 
 function addDays(base: Date, days: number): Date {
@@ -220,11 +220,16 @@ export function computeShipTables(
             const avail = oh + it + shipPlan;
             const projectedAfterPeriod = avail - predPeriod;
             const rawShip = Math.max(0, need28d - projectedAfterPeriod);
-            const shipQty = usingManual
-                ? Math.round(rawShip)
-                : Math.round(Math.min(rawShip, Math.max(0, need28d)));
-
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, !usingManual);
+            
+            // cap처리하는 부분 
+            // const shipQty = usingManual
+            //     ? Math.round(rawShip)
+            //     : Math.round(Math.min(rawShip, Math.max(0, need28d)));
+            // const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, !usingManual);
+            
+            const shipQty = Math.round(rawShip); // 모든 모드에 캡 제거
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, false); // 여기도 모든 모두 캡 제거
+            
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
             const floorDd = floorDailyDemand(cy7, cy28, cy56);
@@ -287,7 +292,8 @@ function applyRebalance(
             // 재배분으로 week1(shipQty)이 바뀌었으므로, 그 값을 기준으로 2~5주차도 다시 굴린다.
             const avail = row.oh + row.it + row.shipPlan;
             const lt = WH_GROUPS[wh].lt;
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty);
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty, false); // Cap제거
+            // const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty); //기존 캡 처리하던 부분
             row.week2 = week2;
             row.week3 = week3;
             row.week4 = week4;

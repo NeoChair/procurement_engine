@@ -88,9 +88,13 @@ export function computePoCalc(
             const poPred120 = effectiveDaily * PO_HORIZON_DAYS;
             const projected120d = (oh + it + shipPlan) - poPred120;
             const rawPo = Math.max(0, need45d - projected120d);
-            const finalPoQty = usingManual
-                ? Math.round(rawPo)
-                : Math.round(Math.min(rawPo, Math.max(0, need45d)));
+            
+            // Manual 제외 캡 원하면,, 씌워주기
+            // const finalPoQty = usingManual
+            //     ? Math.round(rawPo)
+            //     : Math.round(Math.min(rawPo, Math.max(0, need45d)));
+            
+            const finalPoQty = Math.round(rawPo);
 
             result.push({
                 key: `${r.SKU}__${wh}`,
