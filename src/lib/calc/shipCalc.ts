@@ -20,7 +20,7 @@ export const WH_GROUPS: Record<WhKey, { parts: string[]; lt: number }> = {
     NJ:  { parts: ["NJ"],        lt: 77  },
     GA:  { parts: ["GA", "GA2", "SC"], lt: 77  },
     TX:  { parts: ["TX"],        lt: 77  },
-    WF:  { parts: ["WF"],        lt: 115 },
+    WF:  { parts: ["WF"],        lt: 125 },
 };
 
 /** SKU별 매뉴얼 예측치. YEAR_MONTH("YYYYMM") -> FRCST_STOCK(그 달 총 예측수량). */
