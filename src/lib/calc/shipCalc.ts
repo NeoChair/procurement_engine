@@ -1,7 +1,10 @@
 // 선적 계산 (28일 캡, 창고별)
 import type { SummaryRow } from "@/app/api/salessummary/route";
-import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
+import { weightedGrowthFactor, newProductDaily, trendAdjustedNewProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
+
+/** Default + Manual 모드 추세 계산용: SKU별 작년 forward 7일 실제 판매수량(창고별, RATIO_WAREHOUSES만 대상). */
+export type LyForward7dMap = Record<string, Partial<Record<RatioWh, number>>>;
 
 // ── Shock Warning (Floor 기반) ──
 const SHOCK_MIN_SALES_7D = 3;
@@ -84,10 +87,11 @@ export type Ship1Row = {
     factory: string;
     producing: string;
     wh: WhKey;
-    lyPeriod: number;
+    /** 작년 동일 시점 기준 forward 7일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyForward7: number | null;
     ly7: number; cy7: number;
-    ly28: number; cy28: number;
-    ly56: number; cy56: number;
+    cy28: number;
+    cy56: number;
 };
 
 export type Ship2Row = {
@@ -162,6 +166,7 @@ export function computeShipTables(
     week1AllocMode: Week1AllocMode = "target_ratio",
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
+    lyForward7d: LyForward7dMap = {},
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -184,14 +189,21 @@ export function computeShipTables(
             let lyPeriod = sumParts(r, parts, "LAST_YEAR_ACTL_SALES_QTY");
             if (lyPeriod === 0) lyPeriod = (ly56 / 56) * lt;
 
-            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, lyPeriod: Math.round(lyPeriod), ly7, cy7, ly28, cy28, ly56, cy56 });
+            const lyForward7 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                ? lyForward7d[r.SKU]?.[wh as RatioWh] ?? 0
+                : null;
+
+            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, lyForward7, ly7, cy7, cy28, cy56 });
 
             // Ship qty calc
             const growthFactor = weightedGrowthFactor(cy7, ly7, cy28, ly28, cy56, ly56);
             const isNew = isNewProduct(r.SKU, ly7, ly28, ly56, growthFactor, logicMode);
 
             let daily: number;
-            if (isNew) {
+            if (logicMode === "default_manual") {
+                // 매뉴얼 예측치가 없는 SKU/창고는 신제품 기준 계산에 작년 동일시점 추세를 곱한다(WF는 추세 데이터가 없어 보정 없이 그대로).
+                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, ly7, lyForward7);
+            } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
                 // daily = (LY_ACTL * growth) / lt — LY_ACTL은 창고별 리드타임(lt)만큼의 작년 forward 실적이므로
@@ -199,7 +211,7 @@ export function computeShipTables(
                 daily = (lyPeriod * (isFinite(growthFactor) ? growthFactor : 0)) / lt;
             }
 
-            const manualDaily = logicMode === "manual"
+            const manualDaily = (logicMode === "manual" || logicMode === "default_manual")
                 ? manualDailyForWh(r.SKU, wh, lt, forecastMap, shipRatio84d)
                 : null;
             // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체하고, need28d 캡도 없앤다
