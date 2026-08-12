@@ -141,6 +141,35 @@ const WH_SHIP_84D_QUERY = `
     GROUP BY pg.INVT_SKU
 `;
 
+/** Default + Manual 모드 추세 계산용: 작년 동일 시점부터 forward 7일치 실제 판매수량(창고별). */
+export type LyForward7d = {
+    CA: number;
+    TX: number;
+    NJ: number;
+    GA: number;
+};
+
+// 1년 전 시점은 창고코드 체계가 지금과 달랐다(예: GA=2940239/7259780/8351661, TX=3240230, NJ=6585090, CA=357016/7118388).
+// 최근 84일 쿼리(WH_SHIP_84D_QUERY)는 신규 코드(14630~14636)만으로 충분하지만, 1년 전 forward 7일 조회는
+// 옛날 코드까지 같이 매핑해야 데이터가 누락되지 않는다.
+const LY_FORWARD_7D_QUERY = `
+    SELECT
+        pg.INVT_SKU AS SKU,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631', '357016', '7118388') THEN o.QTY ELSE 0 END) AS CA_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14636', '3240230') THEN o.QTY ELSE 0 END) AS TX_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14634', '6585090') THEN o.QTY ELSE 0 END) AS NJ_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635', '2940239', '7259780', '8351661') THEN o.QTY ELSE 0 END) AS GA_QTY
+    FROM [HGBC].[SD].[TB_ORD_DAIL] o
+    JOIN [HGBC].[SD].[TB_PROD_GROUP] pg ON o.ITM_ID = pg.ITM_ID
+    WHERE o.ORD_DE >= @startDate AND o.ORD_DE < @endDate
+      AND pg.INVT_SKU <> ''
+      AND o.WAREHOUSE IN (
+        '14630', '14631', '14632', '14633', '14634', '14635', '14636',
+        '357016', '2940239', '3240230', '6585090', '7118388', '7259780', '8351661'
+      )
+    GROUP BY pg.INVT_SKU
+`;
+
 /** 오늘(PST) 기준 daysAgo일 전 00:00:00(PST) 문자열을 반환한다. */
 function getPstCutoffDate(daysAgo: number): string {
     const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
@@ -350,11 +379,23 @@ export async function GET() {
 
         //console.log(shipRatio84d);
 
+        const lyForward7Result = await db
+            .request()
+            .input("startDate", sql.VarChar, getPstCutoffDate(365))
+            .input("endDate", sql.VarChar, getPstCutoffDate(358))
+            .query<WhShipRow>(LY_FORWARD_7D_QUERY);
+
+        const lyForward7d: Record<string, LyForward7d> = {};
+        for (const r of lyForward7Result.recordset) {
+            lyForward7d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
+        }
+
         return NextResponse.json({
             success: true,
             data: rows,
             snapshotDate,
             shipRatio84d,
+            lyForward7d,
         });
     } catch (err) {
         console.error("DB 조회 오류:", err);
