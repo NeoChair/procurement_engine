@@ -1,6 +1,6 @@
 // SKU 규칙 + 성장계수 + 로직모드
 
-export type LogicMode = "default" | "all_normal" | "all_new" | "manual";
+export type LogicMode = "default_manual" | "default" | "all_normal" | "all_new" | "manual";
 
 const FORCE_NEW_SKU_PREFIXES = [
     "CHA-GM-NEX", "CHA-HC-CZPU", "CHA-MS-M28", "CHA-MS-DBSH",
@@ -37,6 +37,23 @@ export function weightedGrowthFactor(
 
 export function newProductDaily(cy7: number, cy28: number, cy56: number): number {
     return 0.7 * (cy7 / 7) + 0.2 * (cy28 / 28) + 0.1 * (cy56 / 56);
+}
+
+/**
+ * Default + Manual 모드에서 매뉴얼 예측치가 없는 SKU/창고에 쓰는 일 예상판매량.
+ * 신제품 기준 계산(0.7/0.2/0.1)에, 작년 동일 시점 기준 "이제 막 시작되는 7일(forward)"이
+ * "직전 7일(ly7, backward)"보다 얼마나 늘었는지를 나타내는 추세를 곱해 계절성을 반영한다.
+ * lyForward7이 없거나(null) ly7이 0이면 비교 기준이 없으므로 추세=1(보정 없음)로 둔다.
+ * 추세가 1 이하(역성장/보합)면 곱하지 않고 그대로 둔다 — 작년 forward 구간이 우연히 부진했다고
+ * 해서 지금 잘 팔리고 있는 신제품 기준값을 깎아버리면 안 되므로, 상승 추세일 때만 가산 보정한다.
+ */
+export function trendAdjustedNewProductDaily(
+    cy7: number, cy28: number, cy56: number,
+    ly7: number, lyForward7: number | null,
+): number {
+    const rawTrend = (lyForward7 != null && ly7 > 0) ? lyForward7 / ly7 : 1;
+    const trend = rawTrend > 1 ? rawTrend : 1;
+    return newProductDaily(cy7, cy28, cy56) * trend;
 }
 
 export function isNewProduct(
