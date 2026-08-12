@@ -5,7 +5,8 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { WH_GROUPS, type WhKey } from "@/lib/calc/shipCalc";
+import { WH_GROUPS, type WhKey, type LyForward7dMap } from "@/lib/calc/shipCalc";
+import { RATIO_WAREHOUSES, type RatioWh } from "@/lib/calc/rebalance";
 
 const WAREHOUSES = ["CA", "GA", "NJ", "TX", "WF"] as const;
 type Warehouse = (typeof WAREHOUSES)[number];
@@ -37,28 +38,24 @@ type PoRow = {
     factory: string;
     producing: string;
     warehouse: Warehouse;
-    actl63: number;
+    /** 작년 동일 시점 기준 forward 7일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyForward7: number | null;
     last7: number;
     curr7: number;
-    last28: number;
     curr28: number;
-    last56: number;
     curr56: number;
 };
 
-function n(v: number | undefined): string {
-    return (v ?? 0).toLocaleString();
+function n(v: number | undefined | null): string {
+    return v == null ? "-" : v.toLocaleString();
 }
 
-function expandRow(row: SummaryRow, wh: Warehouse): PoRow {
-    const { parts, lt } = WH_GROUPS[wh as WhKey];
-    const last56 = sumParts(row, parts, "LAST_YEAR_2MONTH_SALES_QTY");
+function expandRow(row: SummaryRow, wh: Warehouse, lyForward7d: LyForward7dMap): PoRow {
+    const { parts } = WH_GROUPS[wh as WhKey];
 
-    // 발주 Table 2(poCalc.ts)와 동일하게 창고그룹별 ACTL 합산, 0이면 56일 트레일링 대체
-    let actl = sumParts(row, parts, "LAST_YEAR_ACTL_SALES_QTY");
-    if (actl === 0) {
-        actl = (last56 / 56) * lt;
-    }
+    const lyForward7 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+        ? lyForward7d[row.SKU]?.[wh as RatioWh] ?? 0
+        : null;
 
     return {
         key: `${row.SKU}__${wh}`,
@@ -66,12 +63,10 @@ function expandRow(row: SummaryRow, wh: Warehouse): PoRow {
         factory: factoryOf(row.SKU),
         producing: producingOf(row.SKU),
         warehouse: wh,
-        actl63: Math.round(actl),
+        lyForward7,
         last7:  sumParts(row, parts, "LAST_YEAR_1WEEK_SALES_QTY"),
         curr7:  sumParts(row, parts, "CURR_YEAR_1WEEK_SALES_QTY"),
-        last28: sumParts(row, parts, "LAST_YEAR_1MONTH_SALES_QTY"),
         curr28: sumParts(row, parts, "CURR_YEAR_1MONTH_SALES_QTY"),
-        last56,
         curr56: sumParts(row, parts, "CURR_YEAR_2MONTH_SALES_QTY"),
     };
 }
@@ -81,17 +76,16 @@ const COLUMNS: DataTableColumn<PoRow>[] = [
     { key: "FACTORY",   label: "제작공장",                  align: "left",  getValue: (row) => row.factory },
     { key: "PRODUCING", label: "생산여부",                  align: "left",  getValue: (row) => row.producing },
     { key: "WAREHOUSE", label: "창고",                      align: "left",  getValue: (row) => row.warehouse },
-    { key: "ACTL_63",   label: "작년 동기간 실제판매량(창고 리드타임 기준)", align: "right", getValue: (row) => row.actl63 ?? 0, render: (row) => n(row.actl63) },
+    { key: "LY_FWD7",   label: "작년 오늘 +7일",                 align: "right", getValue: (row) => row.lyForward7 ?? 0, render: (row) => n(row.lyForward7) },
     { key: "LAST_1WEEK",  label: "작년 과거 7일",           align: "right", getValue: (row) => row.last7  ?? 0, render: (row) => n(row.last7) },
     { key: "CURR_1WEEK",  label: "올해 과거 7일",           align: "right", getValue: (row) => row.curr7  ?? 0, render: (row) => n(row.curr7) },
-    { key: "LAST_28",     label: "작년 과거 28일",          align: "right", getValue: (row) => row.last28 ?? 0, render: (row) => n(row.last28) },
     { key: "CURR_28",     label: "올해 과거 28일",          align: "right", getValue: (row) => row.curr28 ?? 0, render: (row) => n(row.curr28) },
-    { key: "LAST_56",     label: "작년 과거 56일",          align: "right", getValue: (row) => row.last56 ?? 0, render: (row) => n(row.last56) },
     { key: "CURR_56",     label: "올해 과거 56일",          align: "right", getValue: (row) => row.curr56 ?? 0, render: (row) => n(row.curr56) },
 ];
 
 export default function PoTable({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
+    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +96,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
                 const json = await res.json();
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
+                setLyForward7d(json.lyForward7d ?? {});
             } catch (err) {
                 setError(err instanceof Error ? err.message : String(err));
             } finally {
@@ -112,7 +107,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
     }, []);
 
     const expandedRows = useMemo(() => {
-        let result = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh)));
+        let result = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh, lyForward7d)));
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
             result = result.filter(r => r.sku.toUpperCase().includes(q));
@@ -124,7 +119,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
             result = result.filter(r => filters.warehouse.includes(r.warehouse));
         }
         return result;
-    }, [rows, filters]);
+    }, [rows, filters, lyForward7d]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;

@@ -13,7 +13,7 @@ const DEFAULT_FILTERS: FilterState = {
     skuQuery: "",
     factory: [],
     warehouse: [],
-    logicMode: "default",
+    logicMode: "default_manual",
     rebalance: false,
     week1AllocMode: "actual_ratio",
 };
@@ -36,7 +36,7 @@ export default function Home() {
                         </span>
                     </div>
 
-                    <h1 className="text-5xl font-bold mb-4">🚢 NeoChair Operations Hub</h1>
+                    <h1 className="text-5xl font-bold mb-4">🚢 Neo Supply Chain Optimization & Planning Engine</h1>
 
                     <ul className="flex gap-2 border-b border-gray-300 mb-4">
                         <li>

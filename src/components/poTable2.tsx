@@ -6,7 +6,7 @@ import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
 import { computePoCalc, type PoCalcRow } from "@/lib/calc/poCalc";
-import type { ForecastMap } from "@/lib/calc/shipCalc";
+import type { ForecastMap, LyForward7dMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 
@@ -30,7 +30,7 @@ function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<Disp
         { key: "WH",      label: "창고",              align: "left",  getValue: r => r.wh },
     ];
 
-    if (logicMode === "manual") {
+    if (logicMode === "manual" || logicMode === "default_manual") {
         columns.push({ key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) });
     }
 
@@ -38,14 +38,7 @@ function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<Disp
         { key: "OH",      label: "현재고",            align: "right", getValue: r => r.oh ?? 0,       render: r => n(r.oh) },
         { key: "IT",      label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,       render: r => n(r.it) },
         { key: "SP",      label: "선적계획",          align: "right", getValue: r => r.shipPlan ?? 0, render: r => n(r.shipPlan) },
-        { key: "DAILY",   label: "일 예상판매량",      align: "right", getValue: r => r.daily ?? 0,    render: r => n(r.daily) },
-    );
-
-    if (logicMode === "manual") {
-        columns.push({ key: "MANUAL_DAILY", label: "매뉴얼 일 예상판매량", align: "right", getValue: r => r.manualDaily ?? 0, render: r => r.manualDaily == null ? "-" : n(r.manualDaily) });
-    }
-
-    columns.push(
+        { key: "DAILY",   label: "일 예상판매량",      align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => n(r.manualDaily ?? r.daily) },
         { key: "PRED120", label: "120일치 예상판매량", align: "right", getValue: r => r.poPred120 ?? 0, render: r => n(r.poPred120) },
         { key: "NEED45",  label: "45일치 필요재고",    align: "right", getValue: r => r.need45d ?? 0,  render: r => n(r.need45d) },
         {
@@ -56,6 +49,10 @@ function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<Disp
         },
     );
 
+    if (logicMode === "manual" || logicMode === "default_manual") {
+        columns.push({ key: "MANUAL_FLAG", label: "비고", align: "left", getValue: r => r.manualDaily != null ? 1 : 0, render: r => r.manualDaily != null ? "ℹ️ 매뉴얼" : "" });
+    }
+
     return columns;
 }
 
@@ -63,6 +60,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
+    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +71,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
                 setShipRatio84d(json.shipRatio84d ?? {});
+                setLyForward7d(json.lyForward7d ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -90,7 +89,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     }, []);
 
     const displayRows = useMemo<DisplayRow[]>(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyForward7d);
 
         calc = calc.filter(r => MAIN_SKU_MAP.get(r.sku)?.IsOn !== "FALSE");
 
@@ -113,7 +112,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             factory: MAIN_SKU_MAP.get(r.sku)?.Factory ?? "-",
             producing: MAIN_SKU_MAP.get(r.sku)?.IsOn === "TRUE" ? "생산" : "-",
         }));
-    }, [rows, filters, shipRatio84d, forecastMap]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyForward7d]);
 
     const skuPoSum = useMemo(() => {
         const map = new Map<string, number>();
