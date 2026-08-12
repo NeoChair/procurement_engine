@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row, type ForecastMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship2Row, type ForecastMap, type LyForward7dMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 
@@ -32,14 +32,7 @@ function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn
         { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
         { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
         { key: "SP",       label: "선적계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
-        { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.daily ?? 0,     render: r => nd(r.daily) },
-    ];
-
-    if (logicMode === "manual") {
-        columns.push({ key: "MANUAL_DAILY", label: "매뉴얼 1일치 예상출고량", align: "right", getValue: r => r.manualDaily ?? 0, render: r => r.manualDaily == null ? "-" : nd(r.manualDaily) });
-    }
-
-    columns.push(
+        { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => nd(r.manualDaily ?? r.daily) },
         { key: "NEED28",   label: "28일치 예상출고량", align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
         {
             key: "SHIP_QTY",
@@ -53,7 +46,11 @@ function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn
         { key: "WEEK3", label: "선적량 3주", align: "right", getValue: r => r.week3 ?? 0, render: r => n(r.week3) },
         { key: "WEEK4", label: "선적량 4주", align: "right", getValue: r => r.week4 ?? 0, render: r => n(r.week4) },
         { key: "WEEK5", label: "선적량 5주", align: "right", getValue: r => r.week5 ?? 0, render: r => n(r.week5) },
-    );
+    ];
+
+    if (logicMode === "manual" || logicMode === "default_manual") {
+        columns.push({ key: "MANUAL_FLAG", label: "비고", align: "left", getValue: r => r.manualDaily != null ? 1 : 0, render: r => r.manualDaily != null ? "ℹ️ 매뉴얼" : "" });
+    }
 
     return columns;
 }
@@ -76,6 +73,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
+    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -86,6 +84,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
                 setShipRatio84d(json.shipRatio84d ?? {});
+                setLyForward7d(json.lyForward7d ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -106,14 +105,14 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, lyForward7d);
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
         r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
         return r;
-    }, [rows, filters, shipRatio84d, forecastMap]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyForward7d]);
 
     const columns = useMemo(() => buildShip2Columns(filters.logicMode), [filters.logicMode]);
 

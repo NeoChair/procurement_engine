@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { computePoCalc } from "@/lib/calc/poCalc";
-import { computeShipTables, type ForecastMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type ForecastMap, type LyForward7dMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { FilterState } from "@/components/sidebarFilters";
 import type { ForecastRow } from "@/app/api/forecast/route";
@@ -26,6 +26,7 @@ export default function SummaryBoard({
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
+    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -35,6 +36,7 @@ export default function SummaryBoard({
                 if (json.success) {
                     setRows(json.data as SummaryRow[]);
                     setShipRatio84d(json.shipRatio84d ?? {});
+                    setLyForward7d(json.lyForward7d ?? {});
                     onSnapshotDate?.(json.snapshotDate ?? null);
                 }
             })
@@ -54,7 +56,7 @@ export default function SummaryBoard({
     }, []);
 
     const poSummary = useMemo(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyForward7d);
 
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
@@ -76,13 +78,13 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters, shipRatio84d, forecastMap]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyForward7d]);
 
     const shipSummary = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap);
+        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, lyForward7d);
         let calc = table2;
 
         if (filters.skuQuery) {
@@ -105,7 +107,7 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters, shipRatio84d, forecastMap]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyForward7d]);
 
     if (loading) {
         return (
