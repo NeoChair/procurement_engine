@@ -8,8 +8,8 @@ const sourceSansPro = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Neochair PO-Shipment Engine",
-  description: "Neochair PO-Shipment Engine",
+  title: "N-SCOPE",
+  description: "Neo Supply Chain Optimization & Planning Engine",
   icons: {
     icon: "/logo.jpg",
   },
