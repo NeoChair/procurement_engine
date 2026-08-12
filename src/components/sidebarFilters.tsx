@@ -244,6 +244,7 @@ const WAREHOUSE_OPTIONS: Option[] = [
 ];
 
 const LOGIC_MODE_OPTIONS: Option[] = [
+    { value: "default_manual", label: "Default + Manual" },
     { value: "default", label: "Default (자동 분류 유지)" },
     { value: "all_normal", label: "Normal (일반 강제)" },
     { value: "all_new", label: "New (신제품 강제)" },
@@ -390,9 +391,9 @@ export default function SidebarFilter({
                         placeholder="창고 선택..."
                     />
                 </div>
-
+                {/* 선적비율 재배분 */}
                 <hr className="border-gray-300" />
-
+                
                 <div className="flex flex-col gap-6 mb-4">
                     <label className="text-xl font-bold text-gray-700">🎯 선적 비율 재배분</label>
                     <label className="flex items-center cursor-pointer">
@@ -469,9 +470,10 @@ export default function SidebarFilter({
                 </div>
 
                 <hr className="border-gray-300" />
-
+                
+                {/* 일 예상 판매 계산 모드*/}
                 <div className="flex flex-col gap-2">
-                    <label className="text-xl font-medium text-gray-700">일 예상 판매 계산 모드</label>
+                    {/* <label className="text-xl font-medium text-gray-700">일 예상 판매 계산 모드</label>
                     <div className="flex flex-col gap-1.5 rounded-md py-2 pe-2">
                         {LOGIC_MODE_OPTIONS.map(opt => (
                             <div key={opt.value} className="flex items-center gap-2">
@@ -487,9 +489,9 @@ export default function SidebarFilter({
                                 <label htmlFor={opt.value} className="text-md text-gray-700">{opt.label}</label>
                             </div>
                         ))}
-                    </div>
+                    </div> */}
 
-                    {filters.logicMode === "manual" && (() => {
+                    {(filters.logicMode === "manual" || filters.logicMode === "default_manual") && (() => {
                         const poYm = manualTargetYm(PO_HORIZON_DAYS);
                         const caYm = manualTargetYm(WH_GROUPS.CA.lt);
                         const njYm = manualTargetYm(WH_GROUPS.NJ.lt);
