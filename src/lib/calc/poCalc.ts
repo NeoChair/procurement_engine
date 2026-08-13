@@ -1,7 +1,7 @@
 // 발주 계산 — 창고별 일 예상판매량(Daily, 선적 엔진과 동일 로직) 기반
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, trendAdjustedNewProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
-import { WH_GROUPS, type WhKey, manualDailyForWh, type ForecastMap, type LyForward7dMap } from "./shipCalc";
+import { WH_GROUPS, type WhKey, manualDailyForWh, type ForecastMap, type LyWindowMap } from "./shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
 
 const PO_NEED_DAYS = 45;
@@ -37,7 +37,8 @@ export function computePoCalc(
     logicMode: LogicMode,
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
-    lyForward7d: LyForward7dMap = {},
+    lyBackward14d: LyWindowMap = {},
+    lyForward14d: LyWindowMap = {},
 ): PoCalcRow[] {
     const result: PoCalcRow[] = [];
 
@@ -60,10 +61,13 @@ export function computePoCalc(
 
             let daily: number;
             if (logicMode === "default_manual") {
-                const lyFwd7 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                    ? lyForward7d[r.SKU]?.[wh as RatioWh] ?? 0
+                const lyFwd14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                    ? lyForward14d[r.SKU]?.[wh as RatioWh] ?? 0
                     : null;
-                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, ly7, lyFwd7);
+                const lyBack14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                    ? lyBackward14d[r.SKU]?.[wh as RatioWh] ?? 0
+                    : 0;
+                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, lyBack14, lyFwd14);
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
