@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship1Row, type LyForward7dMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship1Row, type LyWindowMap } from "@/lib/calc/shipCalc";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -19,8 +19,9 @@ const SHIP1_COLUMNS: DataTableColumn<Ship1Row>[] = [
     { key: "FACTORY",  label: "제작공장",     align: "left",  getValue: r => r.factory },
     { key: "PROD",     label: "생산여부",     align: "left",  getValue: r => r.producing },
     { key: "WH",       label: "창고",         align: "left",  getValue: r => r.wh },
-    { key: "LY_FWD7",  label: "작년 오늘 +7일",    align: "right", getValue: r => r.lyForward7 ?? 0, render: r => n(r.lyForward7) },
-    { key: "LY7",      label: "작년 7일",     align: "right", getValue: r => r.ly7 ?? 0,       render: r => n(r.ly7) },
+    { key: "LY_FWD14", label: "작년 오늘 +14일",   align: "right", getValue: r => r.lyForward14 ?? 0, render: r => n(r.lyForward14) },
+    { key: "LY_BACK14", label: "작년 오늘 -14일",  align: "right", getValue: r => r.lyBackward14 ?? 0, render: r => n(r.lyBackward14) },
+    // { key: "LY7",      label: "작년 7일",     align: "right", getValue: r => r.ly7 ?? 0,       render: r => n(r.ly7) },
     { key: "CY7",      label: "올해 7일",     align: "right", getValue: r => r.cy7 ?? 0,       render: r => n(r.cy7) },
     { key: "CY28",     label: "올해 28일",    align: "right", getValue: r => r.cy28 ?? 0,      render: r => n(r.cy28) },
     { key: "CY56",     label: "올해 56일",    align: "right", getValue: r => r.cy56 ?? 0,      render: r => n(r.cy56) },
@@ -42,7 +43,8 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 
 export default function ShipTable1({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
+    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
+    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +54,8 @@ export default function ShipTable1({ filters }: { filters: FilterState }) {
             .then(json => {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
-                setLyForward7d(json.lyForward7d ?? {});
+                setLyBackward14d(json.lyBackward14d ?? {});
+                setLyForward14d(json.lyForward14d ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -62,9 +65,9 @@ export default function ShipTable1({ filters }: { filters: FilterState }) {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, undefined, undefined, undefined, undefined, lyForward7d);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, undefined, undefined, undefined, undefined, lyBackward14d, lyForward14d);
         return applyFilters(tables.table1, filters);
-    }, [rows, filters, lyForward7d]);
+    }, [rows, filters, lyBackward14d, lyForward14d]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;

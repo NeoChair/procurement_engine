@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { WH_GROUPS, type WhKey, type LyForward7dMap } from "@/lib/calc/shipCalc";
+import { WH_GROUPS, type WhKey, type LyWindowMap } from "@/lib/calc/shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh } from "@/lib/calc/rebalance";
 
 const WAREHOUSES = ["CA", "GA", "NJ", "TX", "WF"] as const;
@@ -38,9 +38,10 @@ type PoRow = {
     factory: string;
     producing: string;
     warehouse: Warehouse;
-    /** 작년 동일 시점 기준 forward 7일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
-    lyForward7: number | null;
-    last7: number;
+    /** 작년 동일 시점 기준 forward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyForward14: number | null;
+    /** 작년 동일 시점 기준 backward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyBackward14: number | null;
     curr7: number;
     curr28: number;
     curr56: number;
@@ -50,11 +51,14 @@ function n(v: number | undefined | null): string {
     return v == null ? "-" : v.toLocaleString();
 }
 
-function expandRow(row: SummaryRow, wh: Warehouse, lyForward7d: LyForward7dMap): PoRow {
+function expandRow(row: SummaryRow, wh: Warehouse, lyBackward14d: LyWindowMap, lyForward14d: LyWindowMap): PoRow {
     const { parts } = WH_GROUPS[wh as WhKey];
 
-    const lyForward7 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-        ? lyForward7d[row.SKU]?.[wh as RatioWh] ?? 0
+    const lyForward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+        ? lyForward14d[row.SKU]?.[wh as RatioWh] ?? 0
+        : null;
+    const lyBackward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+        ? lyBackward14d[row.SKU]?.[wh as RatioWh] ?? 0
         : null;
 
     return {
@@ -63,8 +67,8 @@ function expandRow(row: SummaryRow, wh: Warehouse, lyForward7d: LyForward7dMap):
         factory: factoryOf(row.SKU),
         producing: producingOf(row.SKU),
         warehouse: wh,
-        lyForward7,
-        last7:  sumParts(row, parts, "LAST_YEAR_1WEEK_SALES_QTY"),
+        lyForward14,
+        lyBackward14,
         curr7:  sumParts(row, parts, "CURR_YEAR_1WEEK_SALES_QTY"),
         curr28: sumParts(row, parts, "CURR_YEAR_1MONTH_SALES_QTY"),
         curr56: sumParts(row, parts, "CURR_YEAR_2MONTH_SALES_QTY"),
@@ -76,8 +80,8 @@ const COLUMNS: DataTableColumn<PoRow>[] = [
     { key: "FACTORY",   label: "제작공장",                  align: "left",  getValue: (row) => row.factory },
     { key: "PRODUCING", label: "생산여부",                  align: "left",  getValue: (row) => row.producing },
     { key: "WAREHOUSE", label: "창고",                      align: "left",  getValue: (row) => row.warehouse },
-    { key: "LY_FWD7",   label: "작년 오늘 +7일",                 align: "right", getValue: (row) => row.lyForward7 ?? 0, render: (row) => n(row.lyForward7) },
-    { key: "LAST_1WEEK",  label: "작년 과거 7일",           align: "right", getValue: (row) => row.last7  ?? 0, render: (row) => n(row.last7) },
+    { key: "LY_FWD14",  label: "작년 오늘 +14일",                align: "right", getValue: (row) => row.lyForward14 ?? 0, render: (row) => n(row.lyForward14) },
+    { key: "LY_BACK14", label: "작년 오늘 -14일",                align: "right", getValue: (row) => row.lyBackward14 ?? 0, render: (row) => n(row.lyBackward14) },
     { key: "CURR_1WEEK",  label: "올해 과거 7일",           align: "right", getValue: (row) => row.curr7  ?? 0, render: (row) => n(row.curr7) },
     { key: "CURR_28",     label: "올해 과거 28일",          align: "right", getValue: (row) => row.curr28 ?? 0, render: (row) => n(row.curr28) },
     { key: "CURR_56",     label: "올해 과거 56일",          align: "right", getValue: (row) => row.curr56 ?? 0, render: (row) => n(row.curr56) },
@@ -85,7 +89,8 @@ const COLUMNS: DataTableColumn<PoRow>[] = [
 
 export default function PoTable({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [lyForward7d, setLyForward7d] = useState<LyForward7dMap>({});
+    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
+    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +101,8 @@ export default function PoTable({ filters }: { filters: FilterState }) {
                 const json = await res.json();
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
-                setLyForward7d(json.lyForward7d ?? {});
+                setLyBackward14d(json.lyBackward14d ?? {});
+                setLyForward14d(json.lyForward14d ?? {});
             } catch (err) {
                 setError(err instanceof Error ? err.message : String(err));
             } finally {
@@ -107,7 +113,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
     }, []);
 
     const expandedRows = useMemo(() => {
-        let result = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh, lyForward7d)));
+        let result = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh, lyBackward14d, lyForward14d)));
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
             result = result.filter(r => r.sku.toUpperCase().includes(q));
@@ -119,7 +125,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
             result = result.filter(r => filters.warehouse.includes(r.warehouse));
         }
         return result;
-    }, [rows, filters, lyForward7d]);
+    }, [rows, filters, lyBackward14d, lyForward14d]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;

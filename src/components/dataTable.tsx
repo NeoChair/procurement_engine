@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import ExcelJS from "exceljs";
 
 export type DataTableColumn<T> = {
     key: string;
@@ -9,16 +10,15 @@ export type DataTableColumn<T> = {
     getValue: (row: T) => string | number;
     render?: (row: T) => React.ReactNode;
     cellClassName?: (row: T) => string;
+    /** 다운로드하는 xlsx에서 이 컬럼의 셀만 칠할 배경색(6자리 hex, 예: "FFC7CE"). 화면 표시엔 영향 없음(cellClassName이 담당). */
+    exportFill?: (row: T) => string | undefined;
+    /** 다운로드하는 xlsx에서 이 컬럼의 셀 글자색(6자리 hex, 예: "9C0006"). 화면 표시엔 영향 없음. */
+    exportFontColor?: (row: T) => string | undefined;
 };
 
 type SortState = { key: string; direction: "asc" | "desc" } | null;
 
 const MIN_PERCENT = 4;
-
-function csvEscape(v: string): string {
-    if (/[",\n]/.test(v)) return `"${v.replace(/"/g, '""')}"`;
-    return v;
-}
 
 export default function DataTable<T>({
     columns,
@@ -121,7 +121,7 @@ export default function DataTable<T>({
         window.addEventListener("mouseup", onUp);
     }
 
-    function handleDownload() {
+    async function handleDownload() {
         // 1. 현재 날짜/시간 생성
         const now = new Date();
         
@@ -135,13 +135,28 @@ export default function DataTable<T>({
         
         const timestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 
-        // 2. CSV 로직
-        const header = columns.map((c) => csvEscape(c.label)).join(",");
-        const lines = sortedRows.map((row) =>
-            columns.map((c) => csvEscape(String(c.getValue(row)))).join(",")
-        );
-        const csv = [header, ...lines].join("\n");
-        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+        // 2. xlsx 생성 (exportFill/exportFontColor가 있는 컬럼은 CSV로 못 담는 서식이 필요해서 xlsx로 내보낸다)
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("Sheet1");
+        sheet.addRow(columns.map((c) => c.label));
+        sheet.getRow(1).font = { bold: true };
+
+        for (const row of sortedRows) {
+            const excelRow = sheet.addRow(columns.map((c) => c.getValue(row)));
+            columns.forEach((c, i) => {
+                const fill = c.exportFill?.(row);
+                const fontColor = c.exportFontColor?.(row);
+                if (!fill && !fontColor) return;
+                const cell = excelRow.getCell(i + 1);
+                if (fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${fill}` } };
+                if (fontColor) cell.font = { color: { argb: `FF${fontColor}` } };
+            });
+        }
+
+        sheet.columns.forEach((col) => { col.width = 16; });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const url = URL.createObjectURL(blob);
         
         const a = document.createElement("a");
@@ -150,7 +165,7 @@ export default function DataTable<T>({
         // 3. 파일명에 타임스탬프 적용
         // (파일명에 콜론(:)은 사용이 불가능할 수 있으니 언더바(_)나 하이픈(-)으로 바꾸는 걸 추천해요)
         const safeTimestamp = timestamp.replace(/:/g, '-'); 
-        a.download = `${fileName ?? "table"}_${safeTimestamp}.csv`;
+        a.download = `${fileName ?? "table"}_${safeTimestamp}.xlsx`;
         
         a.click();
         URL.revokeObjectURL(url);

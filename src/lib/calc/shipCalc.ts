@@ -3,8 +3,8 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, trendAdjustedNewProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
 
-/** Default + Manual 모드 추세 계산용: SKU별 작년 forward 7일 실제 판매수량(창고별, RATIO_WAREHOUSES만 대상). */
-export type LyForward7dMap = Record<string, Partial<Record<RatioWh, number>>>;
+/** Default + Manual 모드 추세 계산용: SKU별 작년 특정 14일 구간 실제 판매수량(창고별, RATIO_WAREHOUSES만 대상). */
+export type LyWindowMap = Record<string, Partial<Record<RatioWh, number>>>;
 
 // ── Shock Warning (Floor 기반) ──
 const SHOCK_MIN_SALES_7D = 3;
@@ -87,8 +87,10 @@ export type Ship1Row = {
     factory: string;
     producing: string;
     wh: WhKey;
-    /** 작년 동일 시점 기준 forward 7일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
-    lyForward7: number | null;
+    /** 작년 동일 시점 기준 forward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyForward14: number | null;
+    /** 작년 동일 시점 기준 backward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
+    lyBackward14: number | null;
     ly7: number; cy7: number;
     cy28: number;
     cy56: number;
@@ -116,6 +118,13 @@ export type Ship2Row = {
     shock: boolean;
     /** SKU의 84일 실제 출고 비율 중 이 창고 몫 (합계=1, RATIO_WAREHOUSES 대상 외에는 null) */
     actualRatio: number | null;
+    /** (현재고+이동중재고)/1일 예상판매량 = 재고소진일수(DSI). 일 예상판매량이 0이면 소진 걱정이 없으므로 null. */
+    dsiDays: number | null;
+    /**
+     * DSI를 창고 리드타임(lt) 기준으로 나눈 재고 상태. red=lt 미만(품절위험), yellow=lt~lt+28일, green=lt+28일 이상.
+     * 현재고·이동중재고·일 예상판매량이 전부 0(관리할 게 아무것도 없는 죽은 SKU/창고 조합)이면 태그 없이 null.
+     */
+    dsiStatus: "red" | "yellow" | "green" | null;
 };
 
 /** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화 */
@@ -166,7 +175,8 @@ export function computeShipTables(
     week1AllocMode: Week1AllocMode = "target_ratio",
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
-    lyForward7d: LyForward7dMap = {},
+    lyBackward14d: LyWindowMap = {},
+    lyForward14d: LyWindowMap = {},
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -189,11 +199,14 @@ export function computeShipTables(
             let lyPeriod = sumParts(r, parts, "LAST_YEAR_ACTL_SALES_QTY");
             if (lyPeriod === 0) lyPeriod = (ly56 / 56) * lt;
 
-            const lyForward7 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                ? lyForward7d[r.SKU]?.[wh as RatioWh] ?? 0
+            const lyForward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                ? lyForward14d[r.SKU]?.[wh as RatioWh] ?? 0
+                : null;
+            const lyBackward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
+                ? lyBackward14d[r.SKU]?.[wh as RatioWh] ?? 0
                 : null;
 
-            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, lyForward7, ly7, cy7, cy28, cy56 });
+            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, lyForward14, lyBackward14, ly7, cy7, cy28, cy56 });
 
             // Ship qty calc
             const growthFactor = weightedGrowthFactor(cy7, ly7, cy28, ly28, cy56, ly56);
@@ -202,7 +215,7 @@ export function computeShipTables(
             let daily: number;
             if (logicMode === "default_manual") {
                 // 매뉴얼 예측치가 없는 SKU/창고는 신제품 기준 계산에 작년 동일시점 추세를 곱한다(WF는 추세 데이터가 없어 보정 없이 그대로).
-                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, ly7, lyForward7);
+                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, lyBackward14 ?? 0, lyForward14);
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
@@ -252,6 +265,17 @@ export function computeShipTables(
                 ? shipRatio84d[r.SKU]?.[wh as RatioWh] ?? null
                 : null;
 
+            // DSI(재고소진일수) = (현재고+이동중재고) / 1일 예상판매량. 창고 리드타임(lt) 안에 재고가
+            // 소진되면 다음 선적분이 도착하기 전에 품절될 위험이 있으므로 red, lt~lt+28일이면 여유가
+            // 빠듯하니 yellow, lt+28일 이상이면 안전하니 green으로 표시한다.
+            // 현재고·이동중재고·판매량이 전부 0인 죽은 조합은 관리 대상이 아니므로 태그를 아예 안 띄운다(null).
+            const hasNoActivity = oh <= 0 && it <= 0 && effectiveDaily <= 0;
+            const dsiDays = effectiveDaily > 0 ? (oh + it) / effectiveDaily : null;
+            const dsiStatus: Ship2Row["dsiStatus"] = hasNoActivity ? null :
+                dsiDays == null ? "green" :
+                dsiDays < lt ? "red" :
+                dsiDays < lt + 28 ? "yellow" : "green";
+
             table2.push({
                 key: `${r.SKU}__${wh}__t2`, sku: r.SKU, factory, producing, wh,
                 oh: Math.round(oh), it: Math.round(it), shipPlan: Math.round(shipPlan),
@@ -260,6 +284,8 @@ export function computeShipTables(
                 need28d, shipQty,
                 week2, week3, week4, week5,
                 rebalanceFlag: "", shock, actualRatio,
+                dsiDays: dsiDays == null ? null : Math.round(dsiDays * 10) / 10,
+                dsiStatus,
             });
         }
     }

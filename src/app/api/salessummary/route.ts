@@ -141,8 +141,8 @@ const WH_SHIP_84D_QUERY = `
     GROUP BY pg.INVT_SKU
 `;
 
-/** Default + Manual 모드 추세 계산용: 작년 동일 시점부터 forward 7일치 실제 판매수량(창고별). */
-export type LyForward7d = {
+/** Default + Manual 모드 추세 계산용: 작년 동일 시점 기준 특정 14일 구간 실제 판매수량(창고별). */
+export type LyWindow14d = {
     CA: number;
     TX: number;
     NJ: number;
@@ -150,9 +150,10 @@ export type LyForward7d = {
 };
 
 // 1년 전 시점은 창고코드 체계가 지금과 달랐다(예: GA=2940239/7259780/8351661, TX=3240230, NJ=6585090, CA=357016/7118388).
-// 최근 84일 쿼리(WH_SHIP_84D_QUERY)는 신규 코드(14630~14636)만으로 충분하지만, 1년 전 forward 7일 조회는
+// 최근 84일 쿼리(WH_SHIP_84D_QUERY)는 신규 코드(14630~14636)만으로 충분하지만, 1년 전 시점 조회는
 // 옛날 코드까지 같이 매핑해야 데이터가 누락되지 않는다.
-const LY_FORWARD_7D_QUERY = `
+// @startDate/@endDate 구간을 바꿔가며 backward 14일, forward 14일 조회에 재사용한다.
+const LY_WINDOW_QUERY = `
     SELECT
         pg.INVT_SKU AS SKU,
         SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631', '357016', '7118388') THEN o.QTY ELSE 0 END) AS CA_QTY,
@@ -379,15 +380,26 @@ export async function GET() {
 
         //console.log(shipRatio84d);
 
-        const lyForward7Result = await db
-            .request()
-            .input("startDate", sql.VarChar, getPstCutoffDate(365))
-            .input("endDate", sql.VarChar, getPstCutoffDate(358))
-            .query<WhShipRow>(LY_FORWARD_7D_QUERY);
+        // 작년 오늘 기준 backward 14일(과거)과 forward 14일(미래)을 각각 조회한다.
+        const [lyBackward14Result, lyForward14Result] = await Promise.all([
+            db.request()
+                .input("startDate", sql.VarChar, getPstCutoffDate(379))
+                .input("endDate", sql.VarChar, getPstCutoffDate(365))
+                .query<WhShipRow>(LY_WINDOW_QUERY),
+            db.request()
+                .input("startDate", sql.VarChar, getPstCutoffDate(365))
+                .input("endDate", sql.VarChar, getPstCutoffDate(351))
+                .query<WhShipRow>(LY_WINDOW_QUERY),
+        ]);
 
-        const lyForward7d: Record<string, LyForward7d> = {};
-        for (const r of lyForward7Result.recordset) {
-            lyForward7d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
+        const lyBackward14d: Record<string, LyWindow14d> = {};
+        for (const r of lyBackward14Result.recordset) {
+            lyBackward14d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
+        }
+
+        const lyForward14d: Record<string, LyWindow14d> = {};
+        for (const r of lyForward14Result.recordset) {
+            lyForward14d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
         }
 
         return NextResponse.json({
@@ -395,7 +407,8 @@ export async function GET() {
             data: rows,
             snapshotDate,
             shipRatio84d,
-            lyForward7d,
+            lyBackward14d,
+            lyForward14d,
         });
     } catch (err) {
         console.error("DB 조회 오류:", err);
