@@ -492,7 +492,7 @@ export default function SidebarFilter({
                     </div> */}
 
                     {(filters.logicMode === "manual" || filters.logicMode === "default_manual") && (() => {
-                        const poYm = manualTargetYm(PO_HORIZON_DAYS);
+                        const poYm = manualTargetYm(PO_HORIZON_DAYS, true);
                         const caYm = manualTargetYm(WH_GROUPS.CA.lt);
                         const njYm = manualTargetYm(WH_GROUPS.NJ.lt);
                         const poHasData = availableYms.has(poYm);
@@ -500,7 +500,7 @@ export default function SidebarFilter({
                         const njHasData = availableYms.has(njYm);
                         return (
                             <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
-                                <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 {formatDate(getManualReferenceDate())} 기준 적용 YM</span>
+                                <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 선적 {formatDate(getManualReferenceDate())} / 발주 {formatDate(getManualReferenceDate(true))} 기준 적용 YM</span>
                                 <span className="text-sm text-gray-500">
                                     📌 발주({PO_HORIZON_DAYS}일): {poHasData ? formatYm(poYm) : "데이터 없음, 미적용"}
                                 </span>

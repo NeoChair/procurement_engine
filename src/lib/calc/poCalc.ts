@@ -78,7 +78,7 @@ export function computePoCalc(
             // 발주는 창고 리드타임(lt)이 아니라 PO_HORIZON_DAYS(120일) 기준으로 미래를 내다보므로,
             // 매뉴얼 예측치 대상월도 lt가 아니라 PO_HORIZON_DAYS로 계산해야 한다(선적 엔진과는 기준이 다름).
             const manualDaily = (logicMode === "manual" || logicMode === "default_manual")
-                ? manualDailyForWh(r.SKU, wh, PO_HORIZON_DAYS, forecastMap, shipRatio84d)
+                ? manualDailyForWh(r.SKU, wh, PO_HORIZON_DAYS, forecastMap, shipRatio84d, true)
                 : null;
             // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체하고, need45d 캡도 없앤다
             // (사람이 직접 입력한 값이니 자동 엔진의 안전 상한을 적용하지 않고 raw 부족분을 그대로 반영).
