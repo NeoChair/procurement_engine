@@ -231,10 +231,9 @@ export function computeShipTables(
             const manualDaily = (logicMode === "manual" || logicMode === "default_manual")
                 ? manualDailyForWh(r.SKU, wh, lt, forecastMap, shipRatio84d)
                 : null;
-            // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체하고, need28d 캡도 없앤다
-            // (사람이 직접 입력한 값이니 자동 엔진의 안전 상한을 적용하지 않고 raw 부족분을 그대로 반영).
+            // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체한다 (캡은 Manual 포함 전체 적용).
             const effectiveDaily = manualDaily ?? daily;
-            const usingManual = manualDaily != null;
+            // const usingManual = manualDaily != null; // 현재 미사용 (캡을 Manual 포함 전체 적용으로 바꾸면서), 필요해지면 다시 사용
 
             const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
             const need28d = Math.round(effectiveDaily * safetyDays);
@@ -250,14 +249,9 @@ export function computeShipTables(
             const projectedAfterPeriod = avail - predPeriod;
             const rawShip = Math.max(0, need28d - projectedAfterPeriod);
             
-            // cap처리하는 부분 
-            // const shipQty = usingManual
-            //     ? Math.round(rawShip)
-            //     : Math.round(Math.min(rawShip, Math.max(0, need28d)));
-            // const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, !usingManual);
-            
-            const shipQty = Math.round(rawShip); // 모든 모드에 캡 제거
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, false); // 여기도 모든 모두 캡 제거
+            // cap씌우는 부분 (Manual 포함 전체 캡 적용)
+            const shipQty = Math.round(Math.min(rawShip, Math.max(0, need28d)));
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, true);
             
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
@@ -334,8 +328,8 @@ function applyRebalance(
             // 재배분으로 week1(shipQty)이 바뀌었으므로, 그 값을 기준으로 2~5주차도 다시 굴린다.
             const avail = row.oh + row.it + row.shipPlan;
             const lt = WH_GROUPS[wh].lt;
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty, false); // Cap제거
-            // const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty); //기존 캡 처리하던 부분
+            //const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty, false); // Cap제거
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty); //기존 캡 처리하던 부분
             row.week2 = week2;
             row.week3 = week3;
             row.week4 = week4;
