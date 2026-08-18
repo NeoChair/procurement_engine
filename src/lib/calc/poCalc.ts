@@ -99,12 +99,8 @@ export function computePoCalc(
             const projected120d = (oh + it + shipPlan) - poPred120;
             const rawPo = Math.max(0, need45d - projected120d);
             
-            // Manual 제외 캡 원하면,, 씌워주기
-            // const finalPoQty = usingManual
-            //     ? Math.round(rawPo)
-            //     : Math.round(Math.min(rawPo, Math.max(0, need45d)));
-            
-            const finalPoQty = Math.round(rawPo);
+            // Manual 포함 전체 캡 적용
+            const finalPoQty = Math.round(Math.min(rawPo, Math.max(0, need45d)));
 
             result.push({
                 key: `${r.SKU}__${wh}`,
