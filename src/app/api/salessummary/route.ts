@@ -410,15 +410,15 @@ export async function GET() {
 
         //console.log(shipRatio84d);
 
-        // 작년 오늘 기준 backward 14일(과거)과 forward 14일(미래)을 각각 조회한다.
+        // 작년 오늘 기준 backward 28일(과거)과 forward 28일(미래)을 각각 조회한다.
         const [lyBackward14Result, lyForward14Result] = await Promise.all([
             db.request()
-                .input("startDate", sql.VarChar, getPstCutoffDate(379))
+                .input("startDate", sql.VarChar, getPstCutoffDate(393))
                 .input("endDate", sql.VarChar, getPstCutoffDate(365))
                 .query<WhShipRow>(LY_WINDOW_QUERY),
             db.request()
                 .input("startDate", sql.VarChar, getPstCutoffDate(365))
-                .input("endDate", sql.VarChar, getPstCutoffDate(351))
+                .input("endDate", sql.VarChar, getPstCutoffDate(337))
                 .query<WhShipRow>(LY_WINDOW_QUERY),
         ]);
 
