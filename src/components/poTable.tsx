@@ -32,11 +32,9 @@ function producingOf(sku: string): string {
     return MAIN_SKU_MAP.get(sku)?.IsOn === "TRUE" ? "생산" : "-";
 }
 
-type PoRow = {
-    key: string;
+/** 창고별 원본 판매 비교치 (SKU 통합 전 중간 형태). */
+type PoRowByWh = {
     sku: string;
-    factory: string;
-    producing: string;
     warehouse: Warehouse;
     /** 작년 동일 시점 기준 forward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
     lyForward14: number | null;
@@ -47,11 +45,23 @@ type PoRow = {
     curr56: number;
 };
 
+/** SKU 단위로 합산한 판매량 비교 행. */
+type PoRow = {
+    sku: string;
+    factory: string;
+    producing: string;
+    lyForward14: number | null;
+    lyBackward14: number | null;
+    curr7: number;
+    curr28: number;
+    curr56: number;
+};
+
 function n(v: number | undefined | null): string {
     return v == null ? "-" : v.toLocaleString();
 }
 
-function expandRow(row: SummaryRow, wh: Warehouse, lyBackward14d: LyWindowMap, lyForward14d: LyWindowMap): PoRow {
+function expandRow(row: SummaryRow, wh: Warehouse, lyBackward14d: LyWindowMap, lyForward14d: LyWindowMap): PoRowByWh {
     const { parts } = WH_GROUPS[wh as WhKey];
 
     const lyForward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
@@ -62,10 +72,7 @@ function expandRow(row: SummaryRow, wh: Warehouse, lyBackward14d: LyWindowMap, l
         : null;
 
     return {
-        key: `${row.SKU}__${wh}`,
         sku: row.SKU,
-        factory: factoryOf(row.SKU),
-        producing: producingOf(row.SKU),
         warehouse: wh,
         lyForward14,
         lyBackward14,
@@ -75,11 +82,34 @@ function expandRow(row: SummaryRow, wh: Warehouse, lyBackward14d: LyWindowMap, l
     };
 }
 
+function aggregateBySku(rows: PoRowByWh[]): PoRow[] {
+    const map = new Map<string, PoRow>();
+
+    for (const r of rows) {
+        const cur = map.get(r.sku) ?? {
+            sku: r.sku,
+            factory: factoryOf(r.sku),
+            producing: producingOf(r.sku),
+            lyForward14: null, lyBackward14: null,
+            curr7: 0, curr28: 0, curr56: 0,
+        };
+
+        if (r.lyForward14 != null) cur.lyForward14 = (cur.lyForward14 ?? 0) + r.lyForward14;
+        if (r.lyBackward14 != null) cur.lyBackward14 = (cur.lyBackward14 ?? 0) + r.lyBackward14;
+        cur.curr7 += r.curr7;
+        cur.curr28 += r.curr28;
+        cur.curr56 += r.curr56;
+
+        map.set(r.sku, cur);
+    }
+
+    return [...map.values()];
+}
+
 const COLUMNS: DataTableColumn<PoRow>[] = [
     { key: "SKU",       label: "SKU",                       align: "left",  getValue: (row) => row.sku },
     { key: "FACTORY",   label: "제작공장",                  align: "left",  getValue: (row) => row.factory },
     { key: "PRODUCING", label: "생산여부",                  align: "left",  getValue: (row) => row.producing },
-    { key: "WAREHOUSE", label: "창고",                      align: "left",  getValue: (row) => row.warehouse },
     { key: "LY_FWD14",  label: "작년 오늘 +28일",                align: "right", getValue: (row) => row.lyForward14 ?? 0, render: (row) => n(row.lyForward14) },
     { key: "LY_BACK14", label: "작년 오늘 -28일",                align: "right", getValue: (row) => row.lyBackward14 ?? 0, render: (row) => n(row.lyBackward14) },
     { key: "CURR_1WEEK",  label: "올해 과거 7일",           align: "right", getValue: (row) => row.curr7  ?? 0, render: (row) => n(row.curr7) },
@@ -112,8 +142,13 @@ export default function PoTable({ filters }: { filters: FilterState }) {
         fetchData();
     }, []);
 
-    const expandedRows = useMemo(() => {
-        let result = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh, lyBackward14d, lyForward14d)));
+    const displayRows = useMemo(() => {
+        let byWh = rows.flatMap((row) => WAREHOUSES.map((wh) => expandRow(row, wh, lyBackward14d, lyForward14d)));
+        if (filters.warehouse.length > 0) {
+            byWh = byWh.filter(r => filters.warehouse.includes(r.warehouse));
+        }
+
+        let result = aggregateBySku(byWh);
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
             result = result.filter(r => r.sku.toUpperCase().includes(q));
@@ -121,9 +156,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
         if (filters.factory.length > 0) {
             result = result.filter(r => filters.factory.includes(r.factory));
         }
-        if (filters.warehouse.length > 0) {
-            result = result.filter(r => filters.warehouse.includes(r.warehouse));
-        }
+        result.sort((a, b) => a.sku.localeCompare(b.sku));
         return result;
     }, [rows, filters, lyBackward14d, lyForward14d]);
 
@@ -132,7 +165,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
 
     return (
         <div className="w-full px-2 py-4">
-            <DataTable columns={COLUMNS} rows={expandedRows} rowKey={(row) => row.key} fileName="발주_Table1" />
+            <DataTable columns={COLUMNS} rows={displayRows} rowKey={(row) => row.sku} fileName="발주_Table1" />
         </div>
     );
 }
