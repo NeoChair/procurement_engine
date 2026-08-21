@@ -9,6 +9,7 @@ import { computePoCalc, aggregatePoBySku, type PoCalcRowAgg } from "@/lib/calc/p
 import type { ForecastMap, LyWindowMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
+import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -52,6 +53,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
     const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
     const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
+    const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +66,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 setShipRatio84d(json.shipRatio84d ?? {});
                 setLyBackward14d(json.lyBackward14d ?? {});
                 setLyForward14d(json.lyForward14d ?? {});
+                setTrendMedians(json.trendMedians ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -81,7 +84,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     }, []);
 
     const displayRows = useMemo<DisplayRow[]>(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians);
 
         calc = calc.filter(r => MAIN_SKU_MAP.get(r.sku)?.IsOn !== "FALSE");
 
@@ -104,7 +107,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             factory: MAIN_SKU_MAP.get(r.sku)?.Factory ?? "-",
             producing: MAIN_SKU_MAP.get(r.sku)?.IsOn === "TRUE" ? "생산" : "-",
         }));
-    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians]);
 
     const columns = useMemo(() => buildColumns(filters.logicMode), [filters.logicMode]);
 
