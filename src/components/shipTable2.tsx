@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row, type ForecastMap, type LyWindowMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 
@@ -48,8 +48,6 @@ const DSI_STATUS_FONT: Record<NonNullable<DsiStatus>, string> = {
 function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn<Ship2Row>[] {
     const columns: DataTableColumn<Ship2Row>[] = [
         { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
-        { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
-        { key: "PROD",     label: "생산여부",          align: "left",  getValue: r => r.producing },
         { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
         { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
         { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
@@ -106,8 +104,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
-    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
+    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -118,8 +115,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
                 setShipRatio84d(json.shipRatio84d ?? {});
-                setLyBackward14d(json.lyBackward14d ?? {});
-                setLyForward14d(json.lyForward14d ?? {});
+                setTrendMediansByWh(json.trendMediansByWh ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -140,14 +136,14 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh);
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
         r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
         return r;
-    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d]);
+    }, [rows, filters, shipRatio84d, forecastMap, trendMediansByWh]);
 
     const columns = useMemo(() => buildShip2Columns(filters.logicMode), [filters.logicMode]);
 

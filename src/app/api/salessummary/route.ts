@@ -1,6 +1,7 @@
 import { getDb } from "@/lib/db";
 import { NextResponse } from "next/server";
 import sql from "mssql";
+import { RATIO_WAREHOUSES, type RatioWh } from "@/lib/calc/rebalance";
 
 export interface SummaryRow {
     OWNR_ETP_CD: string;
@@ -180,6 +181,71 @@ function getPstCutoffDate(daysAgo: number): string {
     const d = String(pstNow.getDate()).padStart(2, "0");
     return `${y}-${m}-${d} 00:00:00`;
 }
+
+/** 오늘(PST) 기준 daysAgo일 전 날짜만(YYYY-MM-DD, 시간 없음). */
+function getPstDateOnly(daysAgo: number): string {
+    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+    pstNow.setDate(pstNow.getDate() - daysAgo);
+    const y = pstNow.getFullYear();
+    const m = String(pstNow.getMonth() + 1).padStart(2, "0");
+    const d = String(pstNow.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+/** startDaysAgo(더 과거) ~ endDaysAgo(더 최근) 사이 날짜 목록(YYYY-MM-DD), startDaysAgo부터 endDaysAgo+1일까지. */
+function pstDateRange(startDaysAgo: number, endDaysAgo: number): string[] {
+    const dates: string[] = [];
+    for (let d = startDaysAgo; d > endDaysAgo; d--) dates.push(getPstDateOnly(d));
+    return dates;
+}
+
+function median(values: number[]): number {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+/** 발주 추세 계산용: 작년 오늘 기준 -30일~+150일(180일)의 SKU별 일자별 판매수량(창고 구분 없이 전체 합산). */
+export type TrendMedians = {
+    w0: number; // 작년 오늘 -30일 ~ 작년 오늘
+    w1: number; // 작년 오늘 ~ +30일
+    w2: number; // 작년 오늘 +30일 ~ +60일
+    w3: number; // 작년 오늘 +60일 ~ +90일
+    w4: number; // 작년 오늘 +90일 ~ +120일
+    w5: number; // 작년 오늘 +120일 ~ +150일
+};
+
+type DailyQtyByWhRow = { SKU: string; ORD_DATE: Date; CA_QTY: number; TX_QTY: number; NJ_QTY: number; GA_QTY: number };
+
+// 창고 그룹(CA/TX/NJ/GA, LY_WINDOW_QUERY와 동일한 신/구 창고코드 매핑)별로 SKU+일자 판매수량을 낸다.
+// 발주 추세(SKU 전체 기준)는 이 네 창고 합계를 다시 더해서 쓰고, 선적 추세(창고별)는 각 컬럼을 그대로 쓴다.
+const TREND_DAILY_BY_WH_QUERY = `
+    SELECT
+        pg.INVT_SKU AS SKU,
+        CAST(o.ORD_DE AS DATE) AS ORD_DATE,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631', '357016', '7118388') THEN o.QTY ELSE 0 END) AS CA_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14636', '3240230') THEN o.QTY ELSE 0 END) AS TX_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14634', '6585090') THEN o.QTY ELSE 0 END) AS NJ_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635', '2940239', '7259780', '8351661') THEN o.QTY ELSE 0 END) AS GA_QTY
+    FROM [HGBC].[SD].[TB_ORD_DAIL] o
+    JOIN [HGBC].[SD].[TB_PROD_GROUP] pg ON o.ITM_ID = pg.ITM_ID
+    WHERE o.ORD_DE >= @startDate AND o.ORD_DE < @endDate
+      AND pg.INVT_SKU <> ''
+      AND o.WAREHOUSE IN (
+        '14630', '14631', '14632', '14633', '14634', '14635', '14636',
+        '357016', '2940239', '3240230', '6585090', '7118388', '7259780', '8351661'
+      )
+    GROUP BY pg.INVT_SKU, CAST(o.ORD_DE AS DATE)
+`;
+
+const TREND_WINDOW_BOUNDS: { key: keyof TrendMedians; startDaysAgo: number; endDaysAgo: number }[] = [
+    { key: "w0", startDaysAgo: 395, endDaysAgo: 365 },
+    { key: "w1", startDaysAgo: 365, endDaysAgo: 335 },
+    { key: "w2", startDaysAgo: 335, endDaysAgo: 305 },
+    { key: "w3", startDaysAgo: 305, endDaysAgo: 275 },
+    { key: "w4", startDaysAgo: 275, endDaysAgo: 245 },
+    { key: "w5", startDaysAgo: 245, endDaysAgo: 215 },
+];
 
 function formatDate(d: Date, endOfDay: boolean): string {
     const y = d.getFullYear();
@@ -432,6 +498,44 @@ export async function GET() {
             lyForward14d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
         }
 
+        // 발주/선적 추세: 작년 오늘 -30일~+150일(180일)의 SKU+창고별 일자별 판매수량을 가져와
+        // 30일 단위 6구간 중위값을 낸다. 발주는 창고 구분이 필요 없으므로 4개 창고 합계를 다시 더해서 쓰고,
+        // 선적은 창고별로 따로 낸다(선적은 창고 단위로 재고/리드타임을 관리하므로 SKU 전체 추세로 뭉개면 안 됨).
+        const trendDailyResult = await db
+            .request()
+            .input("startDate", sql.VarChar, getPstCutoffDate(395))
+            .input("endDate", sql.VarChar, getPstCutoffDate(215))
+            .query<DailyQtyByWhRow>(TREND_DAILY_BY_WH_QUERY);
+
+        const dailyByWhMap = new Map<string, Map<string, Record<RatioWh, number>>>();
+        for (const r of trendDailyResult.recordset) {
+            const dateStr = r.ORD_DATE.toISOString().slice(0, 10);
+            if (!dailyByWhMap.has(r.SKU)) dailyByWhMap.set(r.SKU, new Map());
+            dailyByWhMap.get(r.SKU)!.set(dateStr, { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY });
+        }
+
+        const windowDates = TREND_WINDOW_BOUNDS.map(w => ({ key: w.key, dates: pstDateRange(w.startDaysAgo, w.endDaysAgo) }));
+
+        const trendMedians: Record<string, TrendMedians> = {};
+        const trendMediansByWh: Record<string, Partial<Record<RatioWh, TrendMedians>>> = {};
+        for (const [sku, perDate] of dailyByWhMap) {
+            const totalMedians = {} as TrendMedians;
+            const byWh: Partial<Record<RatioWh, TrendMedians>> = {};
+            for (const wh of RATIO_WAREHOUSES) byWh[wh] = {} as TrendMedians;
+
+            for (const w of windowDates) {
+                totalMedians[w.key] = median(w.dates.map(d => {
+                    const day = perDate.get(d);
+                    return day ? day.CA + day.TX + day.NJ + day.GA : 0;
+                }));
+                for (const wh of RATIO_WAREHOUSES) {
+                    byWh[wh]![w.key] = median(w.dates.map(d => perDate.get(d)?.[wh] ?? 0));
+                }
+            }
+            trendMedians[sku] = totalMedians;
+            trendMediansByWh[sku] = byWh;
+        }
+
         return NextResponse.json({
             success: true,
             data: rows,
@@ -439,6 +543,8 @@ export async function GET() {
             shipRatio84d,
             lyBackward14d,
             lyForward14d,
+            trendMedians,
+            trendMediansByWh,
         });
     } catch (err) {
         console.error("DB 조회 오류:", err);

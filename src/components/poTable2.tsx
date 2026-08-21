@@ -5,40 +5,31 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computePoCalc, type PoCalcRow } from "@/lib/calc/poCalc";
+import { computePoCalc, aggregatePoBySku, type PoCalcRowAgg } from "@/lib/calc/poCalc";
 import type { ForecastMap, LyWindowMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
+import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
     (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
 );
 
-type DisplayRow = PoCalcRow & { factory: string; producing: string };
+type DisplayRow = PoCalcRowAgg & { factory: string; producing: string };
 
 function n(v: number | undefined) { return (v ?? 0).toLocaleString(); }
-function pct(v: number | null | undefined): string {
-    return v == null ? "-" : `${(v * 100).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
-}
 
 function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<DisplayRow>[] {
     const columns: DataTableColumn<DisplayRow>[] = [
         { key: "SKU",     label: "SKU",              align: "left",  getValue: r => r.sku },
-        { key: "FACTORY", label: "제작공장",          align: "left",  getValue: r => r.factory },
-        { key: "PROD",    label: "생산여부",          align: "left",  getValue: r => r.producing },
-        { key: "WH",      label: "창고",              align: "left",  getValue: r => r.wh },
     ];
-
-    if (logicMode === "manual" || logicMode === "default_manual") {
-        columns.push({ key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) });
-    }
 
     columns.push(
         { key: "OH",      label: "현재고",            align: "right", getValue: r => r.oh ?? 0,       render: r => n(r.oh) },
         { key: "IT",      label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,       render: r => n(r.it) },
         { key: "SP",      label: "선적계획",          align: "right", getValue: r => r.shipPlan ?? 0, render: r => n(r.shipPlan) },
-        { key: "DAILY",   label: "일 예상판매량",      align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => n(r.manualDaily ?? r.daily) },
+        { key: "DAILY",   label: "120일 이후 예상 판매량", align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => n(r.manualDaily ?? r.daily) },
         { key: "PRED120", label: "120일치 예상판매량", align: "right", getValue: r => r.poPred120 ?? 0, render: r => n(r.poPred120) },
         { key: "NEED45",  label: "45일치 필요재고",    align: "right", getValue: r => r.need45d ?? 0,  render: r => n(r.need45d) },
         {
@@ -50,7 +41,7 @@ function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<Disp
     );
 
     if (logicMode === "manual" || logicMode === "default_manual") {
-        columns.push({ key: "MANUAL_FLAG", label: "비고", align: "left", getValue: r => r.manualDaily != null ? "매뉴얼" : "", render: r => r.manualDaily != null ? "ℹ️ 매뉴얼" : "" });
+        columns.push({ key: "MANUAL_FLAG", label: "비고", align: "left", getValue: r => r.usingManual ? "매뉴얼" : "", render: r => r.usingManual ? "ℹ️ 매뉴얼" : "" });
     }
 
     return columns;
@@ -62,6 +53,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
     const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
     const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
+    const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -74,6 +66,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 setShipRatio84d(json.shipRatio84d ?? {});
                 setLyBackward14d(json.lyBackward14d ?? {});
                 setLyForward14d(json.lyForward14d ?? {});
+                setTrendMedians(json.trendMedians ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -91,7 +84,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     }, []);
 
     const displayRows = useMemo<DisplayRow[]>(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians);
 
         calc = calc.filter(r => MAIN_SKU_MAP.get(r.sku)?.IsOn !== "FALSE");
 
@@ -106,21 +99,15 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             calc = calc.filter(r => filters.warehouse.includes(r.wh));
         }
 
-        // 계산모드와 무관하게 항상 같은 순서(SKU→창고)로 유지. 발주량>0 SKU 우선 표시는 priorityKey로 처리.
-        calc.sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
+        const agg = aggregatePoBySku(calc);
+        agg.sort((a, b) => a.sku.localeCompare(b.sku));
 
-        return calc.map(r => ({
+        return agg.map(r => ({
             ...r,
             factory: MAIN_SKU_MAP.get(r.sku)?.Factory ?? "-",
             producing: MAIN_SKU_MAP.get(r.sku)?.IsOn === "TRUE" ? "생산" : "-",
         }));
-    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d]);
-
-    const skuPoSum = useMemo(() => {
-        const map = new Map<string, number>();
-        for (const r of displayRows) map.set(r.sku, (map.get(r.sku) ?? 0) + r.finalPoQty);
-        return map;
-    }, [displayRows]);
+    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians]);
 
     const columns = useMemo(() => buildColumns(filters.logicMode), [filters.logicMode]);
 
@@ -132,14 +119,11 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             <DataTable
                 columns={columns}
                 rows={displayRows}
-                rowKey={r => r.key}
+                rowKey={r => r.sku}
                 fileName="발주_Table2"
                 defaultSort={(a, b) => {
-                    const sa = skuPoSum.get(a.sku) ?? 0;
-                    const sb = skuPoSum.get(b.sku) ?? 0;
-                    if (sa !== sb) return sb - sa;
-                    if (a.sku !== b.sku) return a.sku.localeCompare(b.sku);
-                    return b.finalPoQty - a.finalPoQty;
+                    if (a.finalPoQty !== b.finalPoQty) return b.finalPoQty - a.finalPoQty;
+                    return a.sku.localeCompare(b.sku);
                 }}
             />
         </div>

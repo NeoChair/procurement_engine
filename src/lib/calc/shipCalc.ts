@@ -1,10 +1,13 @@
 // 선적 계산 (28일 캡, 창고별)
 import type { SummaryRow } from "@/app/api/salessummary/route";
-import { weightedGrowthFactor, newProductDaily, trendAdjustedNewProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
+import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
 
 /** Default + Manual 모드 추세 계산용: SKU별 작년 특정 14일 구간 실제 판매수량(창고별, RATIO_WAREHOUSES만 대상). */
 export type LyWindowMap = Record<string, Partial<Record<RatioWh, number>>>;
+
+/** default_manual 모드 선적 추세 계산용: SKU+창고별 작년 오늘 -30일~+150일 6구간(30일씩) 판매 중위값. */
+export type TrendMedianByWhMap = Record<string, Partial<Record<RatioWh, TrendMedianWindow>>>;
 
 // ── Shock Warning (Floor 기반) ──
 const SHOCK_MIN_SALES_7D = 3;
@@ -91,10 +94,10 @@ export type Ship1Row = {
     factory: string;
     producing: string;
     wh: WhKey;
-    /** 작년 동일 시점 기준 forward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
-    lyForward14: number | null;
-    /** 작년 동일 시점 기준 backward 14일 실제 판매수량. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 null. */
-    lyBackward14: number | null;
+    /** 이 창고 기준 작년 오늘 -30~+150일 6구간(30일씩) 판매 중위값. RATIO_WAREHOUSES(CA/TX/NJ/GA) 대상 외(WF)는 undefined. */
+    trendWindow: TrendMedianWindow | undefined;
+    /** trendWindow로부터 구한 인접 구간 비율 5개(추세1~5). */
+    trendRatios: [number, number, number, number, number];
     ly7: number; cy7: number;
     cy28: number;
     cy56: number;
@@ -131,11 +134,12 @@ export type Ship2Row = {
     dsiStatus: "red" | "yellow" | "green" | null;
 };
 
-/** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화 */
+/** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화.
+ *  cy7/cy28/cy56은 이제 구간 합계가 아니라 일별 판매량의 중위값으로 들어오므로 일수로 나누지 않는다. */
 function floorDailyDemand(cy7: number, cy28: number, cy56: number): number {
-    const dd56 = cy56 > 0 ? cy56 / 56 : 0;
-    const dd28 = cy28 > 0 ? cy28 / 28 : 0;
-    const dd7 = cy7 > 0 ? cy7 / 7 : 0;
+    const dd56 = cy56 > 0 ? cy56 : 0;
+    const dd28 = cy28 > 0 ? cy28 : 0;
+    const dd7 = cy7 > 0 ? cy7 : 0;
     const valid = [dd56, dd28, dd7].filter(v => v > 0);
     if (valid.length === 3) return valid[0] * 0.5 + valid[1] * 0.3 + valid[2] * 0.2;
     if (valid.length === 2) return valid[0] * 0.6 + valid[1] * 0.4;
@@ -179,8 +183,7 @@ export function computeShipTables(
     week1AllocMode: Week1AllocMode = "target_ratio",
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
-    lyBackward14d: LyWindowMap = {},
-    lyForward14d: LyWindowMap = {},
+    trendMediansByWh: TrendMedianByWhMap = {},
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -203,14 +206,12 @@ export function computeShipTables(
             let lyPeriod = sumParts(r, parts, "LAST_YEAR_ACTL_SALES_QTY");
             if (lyPeriod === 0) lyPeriod = (ly56 / 56) * lt;
 
-            const lyForward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                ? lyForward14d[r.SKU]?.[wh as RatioWh] ?? 0
-                : null;
-            const lyBackward14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                ? lyBackward14d[r.SKU]?.[wh as RatioWh] ?? 0
-                : null;
+            // 이 창고 기준 작년 오늘 -30~+150일 6구간 중위값에서 나온 추세1~5(표시용, Table1). WF는
+            // RATIO_WAREHOUSES 대상이 아니라 창고별 추세 데이터가 없으므로 undefined로 넘어간다.
+            const whWindow = RATIO_WAREHOUSES.includes(wh as RatioWh) ? trendMediansByWh[r.SKU]?.[wh as RatioWh] : undefined;
+            const { ratios: trendRatios } = medianTrend(whWindow);
 
-            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, lyForward14, lyBackward14, ly7, cy7, cy28, cy56 });
+            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, trendWindow: whWindow, trendRatios, ly7, cy7, cy28, cy56 });
 
             // Ship qty calc
             const growthFactor = weightedGrowthFactor(cy7, ly7, cy28, ly28, cy56, ly56);
@@ -218,8 +219,14 @@ export function computeShipTables(
 
             let daily: number;
             if (logicMode === "default_manual") {
-                // 매뉴얼 예측치가 없는 SKU/창고는 신제품 기준 계산에 작년 동일시점 추세를 곱한다(WF는 추세 데이터가 없어 보정 없이 그대로).
-                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, lyBackward14 ?? 0, lyForward14);
+                // 1일치 예상출고량 추세: 발주(PO)와 달리 근시일 수요라 먼 구간(추세4/5)은 안 보고, 추세3(60~90일/
+                // 30~60일)부터 본다. 추세3이 100%(=1.0) 이상이면 그대로 쓰고, 미만이면 추세2, 그마저 미만이면
+                // 추세1을 시도한다. 셋 다 100% 미만(추세 없음/하락)이면 보정 없이 baseDaily 그대로 보여준다.
+                const shipTrend = trendRatios[2] >= 1 ? trendRatios[2]
+                    : trendRatios[1] >= 1 ? trendRatios[1]
+                    : trendRatios[0] >= 1 ? trendRatios[0]
+                    : 1;
+                daily = newProductDaily(cy7, cy28, cy56) * shipTrend;
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
@@ -256,7 +263,7 @@ export function computeShipTables(
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
             const floorDd = floorDailyDemand(cy7, cy28, cy56);
-            const finalDd = Math.max(cy7 / 7, floorDd);
+            const finalDd = Math.max(cy7, floorDd);
             const shock = daily > 0 && !(cy7 < SHOCK_MIN_SALES_7D && floorDd <= 0) && oh < SHOCK_DAYS_COVER * finalDd;
 
             const actualRatio = RATIO_WAREHOUSES.includes(wh as RatioWh)

@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship1Row, type LyWindowMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship1Row, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -13,18 +13,27 @@ const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
 );
 
 function n(v: number | undefined | null): string { return v == null ? "-" : v.toLocaleString(); }
+function pct(v: number): string {
+    return `${(v * 100).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+}
 
 const SHIP1_COLUMNS: DataTableColumn<Ship1Row>[] = [
     { key: "SKU",      label: "SKU",         align: "left",  getValue: r => r.sku },
-    { key: "FACTORY",  label: "제작공장",     align: "left",  getValue: r => r.factory },
-    { key: "PROD",     label: "생산여부",     align: "left",  getValue: r => r.producing },
     { key: "WH",       label: "창고",         align: "left",  getValue: r => r.wh },
-    { key: "LY_FWD14", label: "작년 오늘 +28일",   align: "right", getValue: r => r.lyForward14 ?? 0, render: r => n(r.lyForward14) },
-    { key: "LY_BACK14", label: "작년 오늘 -28일",  align: "right", getValue: r => r.lyBackward14 ?? 0, render: r => n(r.lyBackward14) },
-    // { key: "LY7",      label: "작년 7일",     align: "right", getValue: r => r.ly7 ?? 0,       render: r => n(r.ly7) },
     { key: "CY7",      label: "올해 7일",     align: "right", getValue: r => r.cy7 ?? 0,       render: r => n(r.cy7) },
     { key: "CY28",     label: "올해 28일",    align: "right", getValue: r => r.cy28 ?? 0,      render: r => n(r.cy28) },
     { key: "CY56",     label: "올해 56일",    align: "right", getValue: r => r.cy56 ?? 0,      render: r => n(r.cy56) },
+    { key: "MED_W0", label: "중위값 -30~0일",   align: "right", getValue: r => r.trendWindow?.w0 ?? 0, render: r => n(r.trendWindow?.w0) },
+    { key: "MED_W1", label: "중위값 0~30일",    align: "right", getValue: r => r.trendWindow?.w1 ?? 0, render: r => n(r.trendWindow?.w1) },
+    { key: "MED_W2", label: "중위값 30~60일",   align: "right", getValue: r => r.trendWindow?.w2 ?? 0, render: r => n(r.trendWindow?.w2) },
+    { key: "MED_W3", label: "중위값 60~90일",   align: "right", getValue: r => r.trendWindow?.w3 ?? 0, render: r => n(r.trendWindow?.w3) },
+    { key: "MED_W4", label: "중위값 90~120일",  align: "right", getValue: r => r.trendWindow?.w4 ?? 0, render: r => n(r.trendWindow?.w4) },
+    { key: "MED_W5", label: "중위값 120~150일", align: "right", getValue: r => r.trendWindow?.w5 ?? 0, render: r => n(r.trendWindow?.w5) },
+    { key: "TREND1", label: "추세1(w1/w0)", align: "right", getValue: r => r.trendRatios[0], render: r => pct(r.trendRatios[0]) },
+    { key: "TREND2", label: "추세2(w2/w1)", align: "right", getValue: r => r.trendRatios[1], render: r => pct(r.trendRatios[1]) },
+    { key: "TREND3", label: "추세3(w3/w2)", align: "right", getValue: r => r.trendRatios[2], render: r => pct(r.trendRatios[2]) },
+    { key: "TREND4", label: "추세4(w4/w3)", align: "right", getValue: r => r.trendRatios[3], render: r => pct(r.trendRatios[3]) },
+    { key: "TREND5", label: "추세5(w5/w4)", align: "right", getValue: r => r.trendRatios[4], render: r => pct(r.trendRatios[4]) },
 ];
 
 function applyFilters<T extends { sku: string; factory: string; wh: string }>(
@@ -43,8 +52,7 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 
 export default function ShipTable1({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
-    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
+    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,8 +62,7 @@ export default function ShipTable1({ filters }: { filters: FilterState }) {
             .then(json => {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
-                setLyBackward14d(json.lyBackward14d ?? {});
-                setLyForward14d(json.lyForward14d ?? {});
+                setTrendMediansByWh(json.trendMediansByWh ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
@@ -65,9 +72,9 @@ export default function ShipTable1({ filters }: { filters: FilterState }) {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, undefined, undefined, undefined, undefined, lyBackward14d, lyForward14d);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, undefined, undefined, undefined, undefined, trendMediansByWh);
         return applyFilters(tables.table1, filters);
-    }, [rows, filters, lyBackward14d, lyForward14d]);
+    }, [rows, filters, trendMediansByWh]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
     if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
