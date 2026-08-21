@@ -1,6 +1,6 @@
 // 발주 계산 — 창고별 일 예상판매량(Daily, 선적 엔진과 동일 로직) 기반
 import type { SummaryRow } from "@/app/api/salessummary/route";
-import { weightedGrowthFactor, newProductDaily, trendAdjustedNewProductDaily, isNewProduct, isDrop, type LogicMode } from "./logicMode";
+import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap, type LyWindowMap } from "./shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
 
@@ -39,6 +39,7 @@ export function computePoCalc(
     forecastMap: ForecastMap = {},
     lyBackward14d: LyWindowMap = {},
     lyForward14d: LyWindowMap = {},
+    trendMedians: Record<string, TrendMedianWindow> = {},
 ): PoCalcRow[] {
     const result: PoCalcRow[] = [];
     const useManual = logicMode === "manual" || logicMode === "default_manual";
@@ -70,16 +71,10 @@ export function computePoCalc(
             const growthFactor = weightedGrowthFactor(cy7, ly7, cy28, ly28, cy56, ly56);
             const isNew = isNewProduct(r.SKU, ly7, ly28, ly56, growthFactor, logicMode);
 
+            // default_manual 모드는 아래에서 SKU 전체 기준으로 따로 계산하므로(중위값 추세), 여기서 구하는
+            // daily는 default_manual 모드에서는 쓰이지 않는다(다른 로직모드의 창고별 폴백 경로에서만 사용).
             let daily: number;
-            if (logicMode === "default_manual") {
-                const lyFwd14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                    ? lyForward14d[r.SKU]?.[wh as RatioWh] ?? 0
-                    : null;
-                const lyBack14 = RATIO_WAREHOUSES.includes(wh as RatioWh)
-                    ? lyBackward14d[r.SKU]?.[wh as RatioWh] ?? 0
-                    : 0;
-                daily = trendAdjustedNewProductDaily(cy7, cy28, cy56, lyBack14, lyFwd14);
-            } else if (isNew) {
+            if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
                 // LY_ACTL은 창고별 리드타임(lt)만큼의 작년 forward 실적이므로 lt로 나눠야 한다.
@@ -98,9 +93,9 @@ export function computePoCalc(
             perWh[wh] = { oh, it, shipPlan, daily, actualRatio };
         }
 
-        function pushRow(keySuffix: string, wh: WhKey, oh: number, it: number, shipPlan: number, trendDaily: number, effectiveDaily: number, manualDaily: number | null, actualRatio: number | null) {
+        function pushRow(keySuffix: string, wh: WhKey, oh: number, it: number, shipPlan: number, trendDaily: number, effectiveDaily: number, manualDaily: number | null, actualRatio: number | null, poPred120Override?: number) {
             const need45d = effectiveDaily * PO_NEED_DAYS;
-            const poPred120 = effectiveDaily * PO_HORIZON_DAYS;
+            const poPred120 = poPred120Override ?? (effectiveDaily * PO_HORIZON_DAYS);
             const projected120d = (oh + it + shipPlan) - poPred120;
             const rawPo = Math.max(0, need45d - projected120d);
 
@@ -134,7 +129,43 @@ export function computePoCalc(
                 spSum += perWh[wh].shipPlan;
                 trendDailySum += perWh[wh].daily;
             }
-            pushRow("RATIO", "CA", ohSum, itSum, spSum, trendDailySum, skuManualDaily, skuManualDaily, null);
+            pushRow("ALL", "CA", ohSum, itSum, spSum, trendDailySum, skuManualDaily, skuManualDaily, null);
+        } else if (logicMode === "default_manual") {
+            // 매뉴얼 예측치가 없는 SKU: 전 창고(WF 포함) 실측치를 합쳐서 SKU 전체 기준 하나로 계산한다.
+            // 일 예상판매량 자체(0.7/0.2/0.1 가중 7·28·56일 판매량)는 그대로 두고, 여기 곱해지는 "추세"만
+            // 기존 28일 단순 forward/backward 비교 대신 작년 -30~+150일 6구간 중위값 누적(ratchet) 추세로 교체했다.
+            // 판매량(cy7/28/56)은 창고별 부분합을 다시 더하지 않고 SUMMARY_QUERY가 이미 SKU 전체로 낸
+            // TOTAL 컬럼을 그대로 쓴다 — PO는 창고 구분이 필요 없으므로.
+            let ohSum = 0, itSum = 0, spSum = 0;
+            for (const wh of Object.keys(WH_GROUPS) as WhKey[]) {
+                ohSum += perWh[wh].oh;
+                itSum += perWh[wh].it;
+                spSum += perWh[wh].shipPlan;
+            }
+            const cy7Sum = r.CURR_YEAR_1WEEK_TOTAL_SALES_QTY ?? 0;
+            const cy28Sum = r.CURR_YEAR_1MONTH_TOTAL_SALES_QTY ?? 0;
+            const cy56Sum = r.CURR_YEAR_2MONTH_TOTAL_SALES_QTY ?? 0;
+
+            const baseDaily = newProductDaily(cy7Sum, cy28Sum, cy56Sum);
+            const { ratios, trend } = medianTrend(trendMedians[r.SKU]);
+            // "120일 이후 예상 판매량"(화면 daily 필드)는 baseDaily에 최종 추세(구간차 캐스케이드)를 곱한다.
+            const effectiveDaily = baseDaily * trend;
+
+            // 120일치 예상판매량: 추세를 곱하지 않은 baseDaily에, 4구간(30일씩 120일)마다 그 구간 자체의
+            // 배수를 곱해서 더한다. 각 구간(idx)은 자기 위치부터 거꾸로 medianTrend와 같은 캐스케이드를 다시
+            // 태운다: (추세idx - 추세(idx-1)) 차이가 0 이상(증가)인 첫 지점을 배수로 쓰되, 두 추세가 둘 다
+            // 1 미만이면 그 pair는 건너뛴다. 못 찾으면 추세1 자체(1 이상일 때만), 그마저 없으면 1배.
+            const resolvedTermTrend = (idx: number): number => {
+                for (let j = idx; j >= 1; j--) {
+                    if (ratios[j] < 1 && ratios[j - 1] < 1) continue;
+                    const diff = ratios[j] - ratios[j - 1];
+                    if (diff >= 0) return diff;
+                }
+                return ratios[0] >= 1 ? ratios[0] : 1;
+            };
+            const poPred120 = [0, 1, 2, 3].reduce((sum, i) => sum + baseDaily * resolvedTermTrend(i) * 30, 0);
+
+            pushRow("ALL", "CA", ohSum, itSum, spSum, effectiveDaily, effectiveDaily, null, null, poPred120);
         } else {
             for (const wh of RATIO_WAREHOUSES) {
                 const p = perWh[wh];

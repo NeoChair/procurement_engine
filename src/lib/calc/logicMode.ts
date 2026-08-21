@@ -35,33 +35,52 @@ export function weightedGrowthFactor(
     return isFinite(factor) ? factor : NaN;
 }
 
+/** cy7/cy28/cy56은 이제 각 구간 합계가 아니라 일별 판매량의 중위값으로 들어오므로, 일수로 나누지 않고 가중치만 곱한다. */
 export function newProductDaily(cy7: number, cy28: number, cy56: number): number {
-    return 0.7 * (cy7 / 7) + 0.2 * (cy28 / 28) + 0.1 * (cy56 / 56);
+    return 0.7 * cy7 + 0.2 * cy28 + 0.1 * cy56;
 }
 
-// lyBackward14(현재 28일 창)가 이보다 작으면(하루 평균 5개 미만 판매) 표본이 너무 얇아 forward/backward
-// 비율이 노이즈로 튀기 쉽다고 보고 추세 보정을 아예 걸지 않는다(trend=1). CAP 대신 이 최소표본 기준을 쓰는
-// 이유는, CAP은 표본이 충분해도 진짜 큰 성장 신호(예: 신제품 초기 확산)까지 인위적으로 깎아버리기 때문.
-const MIN_LY_BACKWARD_14D_FOR_TREND = 140;
+/** 발주/선적 추세 계산에 쓰는 작년 오늘 기준 -30일~+150일 6구간(30일씩) 판매 중위값. */
+export type TrendMedianWindow = { w0: number; w1: number; w2: number; w3: number; w4: number; w5: number };
+
+function safeMedianRatio(numer: number, denom: number): number {
+    return denom > 0 ? numer / denom : 1;
+}
 
 /**
- * Default + Manual 모드에서 매뉴얼 예측치가 없는 SKU/창고에 쓰는 일 예상판매량.
- * 신제품 기준 계산(0.7/0.2/0.1)에, 작년 동일 시점 기준 "이제 막 시작되는 28일(forward)"이
- * "직전 28일(lyBackward14, backward)"보다 얼마나 늘었는지를 나타내는 추세를 곱해 계절성을 반영한다.
- * lyForward14이 없거나(null) lyBackward14가 MIN_LY_BACKWARD_14D_FOR_TREND 미만이면 비교 기준이
- * 통계적으로 불안정하므로 추세=1(보정 없음)로 둔다.
- * 추세가 1 이하(역성장/보합)면 곱하지 않고 그대로 둔다 — 작년 forward 구간이 우연히 부진했다고
- * 해서 지금 잘 팔리고 있는 신제품 기준값을 깎아버리면 안 되므로, 상승 추세일 때만 가산 보정한다.
+ * 발주(PO) 전용 추세 — 선적엔진의 lyForward14/lyBackward14 단순비교와 별개다.
+ * 작년 오늘 기준 30일씩 6구간(w0~w5)의 일별 판매 중위값으로 인접 구간 비율 5개(추세1~5, ratios)를 구한 뒤,
+ * 가장 최근 구간부터 거꾸로 인접 추세끼리 차이를 본다: (추세5-추세4) → (추세4-추세3) → (추세3-추세2) → (추세2-추세1)
+ * 순서로 확인하되, 두 추세가 둘 다 1 미만(둘 다 하락 구간)이면 그 pair는 건너뛴다. 나머지 중 처음으로
+ * 0 이상(증가)인 차이값을 그대로 배수로 쓴다. 못 찾으면(끝까지 스킵되거나 전부 감소) 추세1 자체를 배수로
+ * 쓰되, 추세1마저 1 미만(하락)이면 보정 없이 그대로 둔다(trend=1, 즉 기본 일판매량 그대로 표시).
  */
-export function trendAdjustedNewProductDaily(
-    cy7: number, cy28: number, cy56: number,
-    lyBackward14: number, lyForward14: number | null,
-): number {
-    const rawTrend = (lyForward14 != null && lyBackward14 >= MIN_LY_BACKWARD_14D_FOR_TREND)
-        ? lyForward14 / lyBackward14
-        : 1;
-    const trend = rawTrend > 1 ? rawTrend : 1;
-    return newProductDaily(cy7, cy28, cy56) * trend;
+export function medianTrend(w: TrendMedianWindow | undefined): { ratios: [number, number, number, number, number]; trend: number } {
+    const m = w ?? { w0: 0, w1: 0, w2: 0, w3: 0, w4: 0, w5: 0 };
+    const ratios: [number, number, number, number, number] = [
+        safeMedianRatio(m.w1, m.w0),
+        safeMedianRatio(m.w2, m.w1),
+        safeMedianRatio(m.w3, m.w2),
+        safeMedianRatio(m.w4, m.w3),
+        safeMedianRatio(m.w5, m.w4),
+    ];
+
+    let trend = 1;
+    let found = false;
+    for (let i = ratios.length - 1; i >= 1; i--) {
+        if (ratios[i] < 1 && ratios[i - 1] < 1) continue;
+        const diff = ratios[i] - ratios[i - 1];
+        if (diff >= 0) {
+            trend = diff;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        trend = ratios[0] >= 1 ? ratios[0] : 1;
+    }
+
+    return { ratios, trend };
 }
 
 export function isNewProduct(
