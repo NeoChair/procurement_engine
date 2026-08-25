@@ -125,7 +125,7 @@ export type Ship2Row = {
     shock: boolean;
     /** SKU의 84일 실제 출고 비율 중 이 창고 몫 (합계=1, RATIO_WAREHOUSES 대상 외에는 null) */
     actualRatio: number | null;
-    /** (현재고+이동중재고)/1일 예상판매량 = 재고소진일수(DSI). 일 예상판매량이 0이면 소진 걱정이 없으므로 null. */
+    /** (현재고+이동중재고+선적계획수량)/1일 예상판매량 = 재고소진일수(DSI). 일 예상판매량이 0이면 소진 걱정이 없으므로 null. */
     dsiDays: number | null;
     /**
      * DSI를 창고 리드타임(lt) 기준으로 나눈 재고 상태. red=lt 미만(품절위험), yellow=lt~lt+28일, green=lt+28일 이상.
@@ -270,12 +270,12 @@ export function computeShipTables(
                 ? shipRatio84d[r.SKU]?.[wh as RatioWh] ?? null
                 : null;
 
-            // DSI(재고소진일수) = (현재고+이동중재고) / 1일 예상판매량. 창고 리드타임(lt) 안에 재고가
-            // 소진되면 다음 선적분이 도착하기 전에 품절될 위험이 있으므로 red, lt~lt+28일이면 여유가
+            // DSI(재고소진일수) = (현재고+이동중재고+선적계획수량) / 1일 예상판매량. 창고 리드타임(lt) 안에
+            // 재고가 소진되면 다음 선적분이 도착하기 전에 품절될 위험이 있으므로 red, lt~lt+28일이면 여유가
             // 빠듯하니 yellow, lt+28일 이상이면 안전하니 green으로 표시한다.
-            // 현재고·이동중재고·판매량이 전부 0인 죽은 조합은 관리 대상이 아니므로 태그를 아예 안 띄운다(null).
-            const hasNoActivity = oh <= 0 && it <= 0 && effectiveDaily <= 0;
-            const dsiDays = effectiveDaily > 0 ? (oh + it) / effectiveDaily : null;
+            // 현재고·이동중재고·선적계획·판매량이 전부 0인 죽은 조합은 관리 대상이 아니므로 태그를 아예 안 띄운다(null).
+            const hasNoActivity = oh <= 0 && it <= 0 && shipPlan <= 0 && effectiveDaily <= 0;
+            const dsiDays = effectiveDaily > 0 ? (oh + it + shipPlan) / effectiveDaily : null;
             const dsiStatus: Ship2Row["dsiStatus"] = hasNoActivity ? null :
                 dsiDays == null ? "green" :
                 dsiDays < lt ? "red" :
