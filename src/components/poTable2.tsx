@@ -6,7 +6,7 @@ import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
 import { computePoCalc, aggregatePoBySku, type PoCalcRowAgg } from "@/lib/calc/poCalc";
-import type { ForecastMap, LyWindowMap } from "@/lib/calc/shipCalc";
+import type { ForecastMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 import type { TrendMedianWindow } from "@/lib/calc/logicMode";
@@ -23,6 +23,7 @@ function n(v: number | undefined) { return (v ?? 0).toLocaleString(); }
 function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<DisplayRow>[] {
     const columns: DataTableColumn<DisplayRow>[] = [
         { key: "SKU",     label: "SKU",              align: "left",  getValue: r => r.sku },
+        { key: "FACTORY", label: "제작공장",          align: "left",  getValue: r => r.factory },
     ];
 
     columns.push(
@@ -51,8 +52,6 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
-    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
     const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -64,8 +63,6 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
                 setShipRatio84d(json.shipRatio84d ?? {});
-                setLyBackward14d(json.lyBackward14d ?? {});
-                setLyForward14d(json.lyForward14d ?? {});
                 setTrendMedians(json.trendMedians ?? {});
             })
             .catch(err => setError(err instanceof Error ? err.message : String(err)))
@@ -84,7 +81,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     }, []);
 
     const displayRows = useMemo<DisplayRow[]>(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians);
 
         calc = calc.filter(r => MAIN_SKU_MAP.get(r.sku)?.IsOn !== "FALSE");
 
@@ -107,7 +104,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
             factory: MAIN_SKU_MAP.get(r.sku)?.Factory ?? "-",
             producing: MAIN_SKU_MAP.get(r.sku)?.IsOn === "TRUE" ? "생산" : "-",
         }));
-    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians]);
+    }, [rows, filters, shipRatio84d, forecastMap, trendMedians]);
 
     const columns = useMemo(() => buildColumns(filters.logicMode), [filters.logicMode]);
 
