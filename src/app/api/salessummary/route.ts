@@ -142,36 +142,6 @@ const WH_SHIP_84D_QUERY = `
     GROUP BY pg.INVT_SKU
 `;
 
-/** Default + Manual 모드 추세 계산용: 작년 동일 시점 기준 특정 14일 구간 실제 판매수량(창고별). */
-export type LyWindow14d = {
-    CA: number;
-    TX: number;
-    NJ: number;
-    GA: number;
-};
-
-// 1년 전 시점은 창고코드 체계가 지금과 달랐다(예: GA=2940239/7259780/8351661, TX=3240230, NJ=6585090, CA=357016/7118388).
-// 최근 84일 쿼리(WH_SHIP_84D_QUERY)는 신규 코드(14630~14636)만으로 충분하지만, 1년 전 시점 조회는
-// 옛날 코드까지 같이 매핑해야 데이터가 누락되지 않는다.
-// @startDate/@endDate 구간을 바꿔가며 backward 14일, forward 14일 조회에 재사용한다.
-const LY_WINDOW_QUERY = `
-    SELECT
-        pg.INVT_SKU AS SKU,
-        SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631', '357016', '7118388') THEN o.QTY ELSE 0 END) AS CA_QTY,
-        SUM(CASE WHEN o.WAREHOUSE IN ('14636', '3240230') THEN o.QTY ELSE 0 END) AS TX_QTY,
-        SUM(CASE WHEN o.WAREHOUSE IN ('14634', '6585090') THEN o.QTY ELSE 0 END) AS NJ_QTY,
-        SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635', '2940239', '7259780', '8351661') THEN o.QTY ELSE 0 END) AS GA_QTY
-    FROM [HGBC].[SD].[TB_ORD_DAIL] o
-    JOIN [HGBC].[SD].[TB_PROD_GROUP] pg ON o.ITM_ID = pg.ITM_ID
-    WHERE o.ORD_DE >= @startDate AND o.ORD_DE < @endDate
-      AND pg.INVT_SKU <> ''
-      AND o.WAREHOUSE IN (
-        '14630', '14631', '14632', '14633', '14634', '14635', '14636',
-        '357016', '2940239', '3240230', '6585090', '7118388', '7259780', '8351661'
-      )
-    GROUP BY pg.INVT_SKU
-`;
-
 /** 오늘(PST) 기준 daysAgo일 전 00:00:00(PST) 문자열을 반환한다. */
 function getPstCutoffDate(daysAgo: number): string {
     const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
@@ -217,7 +187,7 @@ export type TrendMedians = {
 
 type DailyQtyByWhRow = { SKU: string; ORD_DATE: Date; CA_QTY: number; TX_QTY: number; NJ_QTY: number; GA_QTY: number };
 
-// 창고 그룹(CA/TX/NJ/GA, LY_WINDOW_QUERY와 동일한 신/구 창고코드 매핑)별로 SKU+일자 판매수량을 낸다.
+// 창고 그룹(CA/TX/NJ/GA, 신/구 창고코드 매핑)별로 SKU+일자 판매수량을 낸다.
 // 발주 추세(SKU 전체 기준)는 이 네 창고 합계를 다시 더해서 쓰고, 선적 추세(창고별)는 각 컬럼을 그대로 쓴다.
 const TREND_DAILY_BY_WH_QUERY = `
     SELECT
@@ -476,28 +446,6 @@ export async function GET() {
 
         //console.log(shipRatio84d);
 
-        // 작년 오늘 기준 backward 28일(과거)과 forward 28일(미래)을 각각 조회한다.
-        const [lyBackward14Result, lyForward14Result] = await Promise.all([
-            db.request()
-                .input("startDate", sql.VarChar, getPstCutoffDate(393))
-                .input("endDate", sql.VarChar, getPstCutoffDate(365))
-                .query<WhShipRow>(LY_WINDOW_QUERY),
-            db.request()
-                .input("startDate", sql.VarChar, getPstCutoffDate(365))
-                .input("endDate", sql.VarChar, getPstCutoffDate(337))
-                .query<WhShipRow>(LY_WINDOW_QUERY),
-        ]);
-
-        const lyBackward14d: Record<string, LyWindow14d> = {};
-        for (const r of lyBackward14Result.recordset) {
-            lyBackward14d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
-        }
-
-        const lyForward14d: Record<string, LyWindow14d> = {};
-        for (const r of lyForward14Result.recordset) {
-            lyForward14d[r.SKU] = { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY };
-        }
-
         // 발주/선적 추세: 작년 오늘 -30일~+150일(180일)의 SKU+창고별 일자별 판매수량을 가져와
         // 30일 단위 6구간 중위값을 낸다. 발주는 창고 구분이 필요 없으므로 4개 창고 합계를 다시 더해서 쓰고,
         // 선적은 창고별로 따로 낸다(선적은 창고 단위로 재고/리드타임을 관리하므로 SKU 전체 추세로 뭉개면 안 됨).
@@ -541,8 +489,6 @@ export async function GET() {
             data: rows,
             snapshotDate,
             shipRatio84d,
-            lyBackward14d,
-            lyForward14d,
             trendMedians,
             trendMediansByWh,
         });
