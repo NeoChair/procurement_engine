@@ -1,7 +1,7 @@
 // 발주 계산 — 창고별 일 예상판매량(Daily, 선적 엔진과 동일 로직) 기반
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
-import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap, type LyWindowMap } from "./shipCalc";
+import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap } from "./shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
 
 const PO_NEED_DAYS = 45;
@@ -37,8 +37,6 @@ export function computePoCalc(
     logicMode: LogicMode,
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
-    lyBackward14d: LyWindowMap = {},
-    lyForward14d: LyWindowMap = {},
     trendMedians: Record<string, TrendMedianWindow> = {},
 ): PoCalcRow[] {
     const result: PoCalcRow[] = [];

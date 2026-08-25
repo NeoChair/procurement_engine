@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { computePoCalc } from "@/lib/calc/poCalc";
-import { computeShipTables, type ForecastMap, type LyWindowMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 import type { FilterState } from "@/components/sidebarFilters";
@@ -27,8 +27,6 @@ export default function SummaryBoard({
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [lyBackward14d, setLyBackward14d] = useState<LyWindowMap>({});
-    const [lyForward14d, setLyForward14d] = useState<LyWindowMap>({});
     const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
     const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
     const [loading, setLoading] = useState(true);
@@ -40,8 +38,6 @@ export default function SummaryBoard({
                 if (json.success) {
                     setRows(json.data as SummaryRow[]);
                     setShipRatio84d(json.shipRatio84d ?? {});
-                    setLyBackward14d(json.lyBackward14d ?? {});
-                    setLyForward14d(json.lyForward14d ?? {});
                     setTrendMedians(json.trendMedians ?? {});
                     setTrendMediansByWh(json.trendMediansByWh ?? {});
                     onSnapshotDate?.(json.snapshotDate ?? null);
@@ -63,7 +59,7 @@ export default function SummaryBoard({
     }, []);
 
     const poSummary = useMemo(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians);
 
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
@@ -85,7 +81,7 @@ export default function SummaryBoard({
         const healthyCount = totalSkuCount - needCount;
 
         return { needCount, totalQty, healthyCount };
-    }, [rows, filters, shipRatio84d, forecastMap, lyBackward14d, lyForward14d, trendMedians]);
+    }, [rows, filters, shipRatio84d, forecastMap, trendMedians]);
 
     const shipSummary = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(

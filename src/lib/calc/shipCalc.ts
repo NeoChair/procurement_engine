@@ -3,9 +3,6 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
 
-/** Default + Manual 모드 추세 계산용: SKU별 작년 특정 14일 구간 실제 판매수량(창고별, RATIO_WAREHOUSES만 대상). */
-export type LyWindowMap = Record<string, Partial<Record<RatioWh, number>>>;
-
 /** default_manual 모드 선적 추세 계산용: SKU+창고별 작년 오늘 -30일~+150일 6구간(30일씩) 판매 중위값. */
 export type TrendMedianByWhMap = Record<string, Partial<Record<RatioWh, TrendMedianWindow>>>;
 
