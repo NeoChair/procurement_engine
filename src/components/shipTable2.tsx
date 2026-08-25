@@ -48,6 +48,7 @@ const DSI_STATUS_FONT: Record<NonNullable<DsiStatus>, string> = {
 function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn<Ship2Row>[] {
     const columns: DataTableColumn<Ship2Row>[] = [
         { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
+        { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
         { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
         { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
         { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
