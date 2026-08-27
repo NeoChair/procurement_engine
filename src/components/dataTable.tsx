@@ -14,6 +14,11 @@ export type DataTableColumn<T> = {
     exportFill?: (row: T) => string | undefined;
     /** 다운로드하는 xlsx에서 이 컬럼의 셀 글자색(6자리 hex, 예: "9C0006"). 화면 표시엔 영향 없음. */
     exportFontColor?: (row: T) => string | undefined;
+    /** true면 화면 테이블에는 렌더링하지 않고 xlsx 다운로드에만 포함한다(수식 체인에 필요한 도움 컬럼용). */
+    hiddenInView?: boolean;
+    /** 있으면 xlsx 셀에 getValue 값 대신 이 수식("=A2+B2" 형태, 등호 포함)을 넣는다.
+     *  excelRow는 그 행의 실제 엑셀 행번호(1행이 헤더라 데이터는 2부터 시작). getValue 결과는 캐시값(result)으로 같이 들어간다. */
+    getFormula?: (row: T, excelRow: number) => string;
 };
 
 type SortState = { key: string; direction: "asc" | "desc" } | null;
@@ -47,10 +52,12 @@ export default function DataTable<T>({
     // 마지막 컬럼을 제외한 나머지 컬럼의 폭(퍼센트). 마지막 컬럼은 잔여 100%를 차지한다.
     // SKU는 "CHA-MS-CPS-BK-2PK" 같은 긴 값이 안 잘리도록 넓게, 제작공장은 값이 짧아(HR/MT 등) 좁게 시작한다.
     const [colPercents, setColPercents] = useState<number[]>(() => {
+        const viewColumns = columns.filter((c) => !c.hiddenInView);
         const weight = (key: string) => (key === "SKU" ? 2.0 : key === "FACTORY" ? 0.8 : 1);
-        const totalWeight = columns.reduce((s, c) => s + weight(c.key), 0);
-        return columns.slice(0, -1).map((c) => (weight(c.key) / totalWeight) * 100);
+        const totalWeight = viewColumns.reduce((s, c) => s + weight(c.key), 0);
+        return viewColumns.slice(0, -1).map((c) => (weight(c.key) / totalWeight) * 100);
     });
+    const viewColumns = useMemo(() => columns.filter((c) => !c.hiddenInView), [columns]);
     const tableRef = useRef<HTMLTableElement>(null);
     const resizingRef = useRef<{ index: number; startX: number; startCur: number; startNext: number } | null>(null);
 
@@ -144,16 +151,25 @@ export default function DataTable<T>({
         for (const row of sortedRows) {
             const excelRow = sheet.addRow(columns.map((c) => c.getValue(row)));
             columns.forEach((c, i) => {
+                const cell = excelRow.getCell(i + 1);
+                if (c.getFormula) {
+                    const result = c.getValue(row);
+                    cell.value = { formula: c.getFormula(row, excelRow.number).replace(/^=/, ""), result: typeof result === "number" ? result : undefined };
+                }
                 const fill = c.exportFill?.(row);
                 const fontColor = c.exportFontColor?.(row);
-                if (!fill && !fontColor) return;
-                const cell = excelRow.getCell(i + 1);
                 if (fill) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: `FF${fill}` } };
                 if (fontColor) cell.font = { color: { argb: `FF${fontColor}` } };
             });
         }
 
-        sheet.columns.forEach((col) => { col.width = 16; });
+        columns.forEach((c, i) => {
+            const col = sheet.getColumn(i + 1);
+            col.width = 16;
+            // hiddenInView 컬럼(수식 체인용 도움 컬럼)은 엑셀에서도 숨김 처리한다. 지운 게 아니라
+            // 숨긴 것뿐이라, 열어보면 없지만 필요하면 사용자가 직접 숨김 해제해서 볼 수 있다.
+            if (c.hiddenInView) col.hidden = true;
+        });
 
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
@@ -194,15 +210,15 @@ export default function DataTable<T>({
                     style={{ borderCollapse: "separate", borderSpacing: 0, fontSize: "14px", tableLayout: "fixed" }}
                 >
                     <colgroup>
-                        {columns.map((col, i) => (
+                        {viewColumns.map((col, i) => (
                             <col key={col.key} style={{ width: `${widths[i]}%` }} />
                         ))}
                     </colgroup>
                     <thead>
                         <tr style={{ height: `${headerHeight}px` }}>
-                            {columns.map((col, i) => {
+                            {viewColumns.map((col, i) => {
                                 const isSorted = sort?.key === col.key;
-                                const isLast = i === columns.length - 1;
+                                const isLast = i === viewColumns.length - 1;
                                 return (
                                     <th
                                         key={col.key}
@@ -234,7 +250,7 @@ export default function DataTable<T>({
                     <tbody>
                         {sortedRows.map((row) => (
                             <tr key={rowKey(row)} className={`bg-white hover:bg-gray-50 ${rowClassName ? rowClassName(row) : ""}`} style={{ height: `${rowHeight}px` }}>
-                                {columns.map((col) => (
+                                {viewColumns.map((col) => (
                                     <td
                                         key={col.key}
                                         className={`${col.cellClassName ? col.cellClassName(row) : "bg-inherit"} px-3 overflow-hidden text-ellipsis whitespace-nowrap ${

@@ -5,7 +5,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, WH_GROUPS, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 
@@ -45,6 +45,33 @@ const DSI_STATUS_FONT: Record<NonNullable<DsiStatus>, string> = {
     green: "006100",
 };
 
+/** rollMultiWeek(shipCalc.ts)과 동일한 롤링 계산의 중간값들. xlsx 다운로드에서 2~5주차를
+ *  살아있는 수식으로 체인시킬 때, 각 도움 컬럼의 캐시(result)용 숫자를 여기서 구한다. */
+function rollingHelpers(r: Ship2Row) {
+    const daily = r.manualDaily ?? r.daily ?? 0;
+    const lt = WH_GROUPS[r.wh].lt;
+    const avail = (r.oh ?? 0) + (r.it ?? 0) + (r.shipPlan ?? 0);
+    const init = Math.max(0, avail - daily * lt);
+    const p1 = Math.max(0, init + (r.shipQty ?? 0) - daily * 7);
+    const p2 = Math.max(0, p1 + (r.week2 ?? 0) - daily * 7);
+    const p3 = Math.max(0, p2 + (r.week3 ?? 0) - daily * 7);
+    return { lt, init, p1, p2, p3 };
+}
+
+/** WH_GROUPS(창고별 리드타임)를 엑셀 IF-체인 문자열로 펼친다. 별도 "리드타임" 컬럼을 안 두고
+ *  이 식을 초기 예상재고 수식에 바로 박아 넣는 이유: 도움 컬럼 두 개가 나란히(연속으로) 숨김 처리되면
+ *  ExcelJS가 xlsx로 저장할 때 뒤 컬럼의 hidden 속성을 누락시키는 버그가 있어서, 숨김 컬럼끼리 붙지
+ *  않도록(항상 보이는 week 컬럼이 사이에 오도록) 구성해야 한다. */
+function ltFormulaExpr(row: number): string {
+    const entries = Object.entries(WH_GROUPS) as [string, { lt: number }][];
+    let expr = `${entries[entries.length - 1][1].lt}`;
+    for (let i = entries.length - 2; i >= 0; i--) {
+        const [wh, { lt }] = entries[i];
+        expr = `IF(C${row}="${wh}",${lt},${expr})`;
+    }
+    return expr;
+}
+
 function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn<Ship2Row>[] {
     const columns: DataTableColumn<Ship2Row>[] = [
         { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
@@ -64,10 +91,48 @@ function buildShip2Columns(logicMode: FilterState["logicMode"]): DataTableColumn
             render: r => n(r.shipQty),
             cellClassName: r => (r.shipQty ?? 0) > 0 ? "!bg-[#ffe0e0] text-[#c62828] font-semibold" : "bg-inherit",
         },
-        { key: "WEEK2", label: "선적량 2주", align: "right", getValue: r => r.week2 ?? 0, render: r => n(r.week2) },
-        { key: "WEEK3", label: "선적량 3주", align: "right", getValue: r => r.week3 ?? 0, render: r => n(r.week3) },
-        { key: "WEEK4", label: "선적량 4주", align: "right", getValue: r => r.week4 ?? 0, render: r => n(r.week4) },
-        { key: "WEEK5", label: "선적량 5주", align: "right", getValue: r => r.week5 ?? 0, render: r => n(r.week5) },
+        // -- 아래 5개는 xlsx 다운로드에서 2~5주차 선적량을 살아있는 수식으로 재현하기 위한 도움 컬럼(화면엔 안 보임).
+        // 숨김 컬럼끼리 나란히 붙으면 ExcelJS 저장 버그로 뒤엣것의 숨김이 풀리므로, 항상 보이는 week 컬럼을 사이에 둔다. --
+        {
+            key: "INIT_PROJ", label: "초기 예상재고", hiddenInView: true,
+            getValue: r => rollingHelpers(r).init,
+            getFormula: (_r, row) => `=MAX(0,(E${row}+F${row}+G${row})-H${row}*(${ltFormulaExpr(row)}))`,
+        },
+        {
+            key: "WEEK2", label: "선적량 2주", align: "right",
+            getValue: r => r.week2 ?? 0, render: r => n(r.week2),
+            getFormula: (_r, row) => `=ROUND(MIN(MAX(0,I${row}-(K${row}+J${row}-H${row}*7)),MAX(0,I${row})),0)`,
+        },
+        {
+            key: "PROJ_W2", label: "2주차 이후 예상재고", hiddenInView: true,
+            getValue: r => rollingHelpers(r).p1,
+            getFormula: (_r, row) => `=MAX(0,K${row}+J${row}-H${row}*7)`,
+        },
+        {
+            key: "WEEK3", label: "선적량 3주", align: "right",
+            getValue: r => r.week3 ?? 0, render: r => n(r.week3),
+            getFormula: (_r, row) => `=ROUND(MIN(MAX(0,I${row}-(M${row}+L${row}-H${row}*7)),MAX(0,I${row})),0)`,
+        },
+        {
+            key: "PROJ_W3", label: "3주차 이후 예상재고", hiddenInView: true,
+            getValue: r => rollingHelpers(r).p2,
+            getFormula: (_r, row) => `=MAX(0,M${row}+L${row}-H${row}*7)`,
+        },
+        {
+            key: "WEEK4", label: "선적량 4주", align: "right",
+            getValue: r => r.week4 ?? 0, render: r => n(r.week4),
+            getFormula: (_r, row) => `=ROUND(MIN(MAX(0,I${row}-(O${row}+N${row}-H${row}*7)),MAX(0,I${row})),0)`,
+        },
+        {
+            key: "PROJ_W4", label: "4주차 이후 예상재고", hiddenInView: true,
+            getValue: r => rollingHelpers(r).p3,
+            getFormula: (_r, row) => `=MAX(0,O${row}+N${row}-H${row}*7)`,
+        },
+        {
+            key: "WEEK5", label: "선적량 5주", align: "right",
+            getValue: r => r.week5 ?? 0, render: r => n(r.week5),
+            getFormula: (_r, row) => `=ROUND(MIN(MAX(0,I${row}-(Q${row}+P${row}-H${row}*7)),MAX(0,I${row})),0)`,
+        },
         {
             key: "STATUS",
             label: "Status",
