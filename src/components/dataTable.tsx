@@ -16,9 +16,14 @@ export type DataTableColumn<T> = {
     exportFontColor?: (row: T) => string | undefined;
     /** true면 화면 테이블에는 렌더링하지 않고 xlsx 다운로드에만 포함한다(수식 체인에 필요한 도움 컬럼용). */
     hiddenInView?: boolean;
-    /** 있으면 xlsx 셀에 getValue 값 대신 이 수식("=A2+B2" 형태, 등호 포함)을 넣는다.
-     *  excelRow는 그 행의 실제 엑셀 행번호(1행이 헤더라 데이터는 2부터 시작). getValue 결과는 캐시값(result)으로 같이 들어간다. */
-    getFormula?: (row: T, excelRow: number) => string;
+    /** 있으면 xlsx 셀에 getValue 값 대신 이 수식("=A2+B2" 형태, 등호 포함)을 넣는다. undefined를 반환하면
+     *  그 행은 수식 없이 getValue 값을 그대로 쓴다(사용자가 직접 고친 값 등 수식으로 덮으면 안 되는 경우).
+     *  excelRow는 그 행의 실제 엑셀 행번호(1행이 헤더라 데이터는 2부터 시작). */
+    getFormula?: (row: T, excelRow: number) => string | undefined;
+    /** true면 이 셀을 숫자 입력창으로 렌더링한다(값은 getValue가 채움). */
+    editable?: (row: T) => boolean;
+    /** 편집 셀에서 값을 커밋할 때 호출. 입력을 지우면 value가 null로 온다(오버라이드 해제 의도). */
+    onEdit?: (row: T, value: number | null) => void;
 };
 
 type SortState = { key: string; direction: "asc" | "desc" } | null;
@@ -152,9 +157,10 @@ export default function DataTable<T>({
             const excelRow = sheet.addRow(columns.map((c) => c.getValue(row)));
             columns.forEach((c, i) => {
                 const cell = excelRow.getCell(i + 1);
-                if (c.getFormula) {
+                const formula = c.getFormula?.(row, excelRow.number);
+                if (formula) {
                     const result = c.getValue(row);
-                    cell.value = { formula: c.getFormula(row, excelRow.number).replace(/^=/, ""), result: typeof result === "number" ? result : undefined };
+                    cell.value = { formula: formula.replace(/^=/, ""), result: typeof result === "number" ? result : undefined };
                 }
                 const fill = c.exportFill?.(row);
                 const fontColor = c.exportFontColor?.(row);
@@ -261,7 +267,21 @@ export default function DataTable<T>({
                                             verticalAlign: "middle",
                                         }}
                                     >
-                                        {col.render ? col.render(row) : col.getValue(row)}
+                                        {col.editable?.(row) ? (
+                                            <input
+                                                key={`${col.key}-${col.getValue(row)}`}
+                                                type="number"
+                                                defaultValue={col.getValue(row) as number}
+                                                className={`w-full bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${col.align === "right" ? "text-right" : "text-left"}`}
+                                                onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+                                                onBlur={(e) => {
+                                                    const raw = e.target.value.trim();
+                                                    if (raw === "") { col.onEdit?.(row, null); return; }
+                                                    const num = Number(raw);
+                                                    if (!Number.isNaN(num)) col.onEdit?.(row, num);
+                                                }}
+                                            />
+                                        ) : col.render ? col.render(row) : col.getValue(row)}
                                     </td>
                                 ))}
                             </tr>
