@@ -16,11 +16,11 @@ const fixed42daysSKU = ["CHA-MS-CPS-BK", "CHA-MS-M28-BK", "CHA-MS-M28-PK", "CHA-
 export type WhKey = "CA" | "NJ" | "GA" | "TX" | "WF";
 
 export const WH_GROUPS: Record<WhKey, { parts: string[]; lt: number }> = {
-    CA:  { parts: ["CA", "CA2"], lt: 63  },
-    NJ:  { parts: ["NJ"],        lt: 77  },
-    GA:  { parts: ["GA", "GA2", "SC"], lt: 77  },
-    TX:  { parts: ["TX"],        lt: 77  },
-    WF:  { parts: ["WF"],        lt: 125 },
+    CA:  { parts: ["CA", "CA2"], lt: 72  },
+    NJ:  { parts: ["NJ"],        lt: 92  },
+    GA:  { parts: ["GA", "GA2", "SC"], lt: 92  },
+    TX:  { parts: ["TX"],        lt: 92  },
+    WF:  { parts: ["WF"],        lt: 115 },
 };
 
 /** SKU별 매뉴얼 예측치. YEAR_MONTH("YYYYMM") -> FRCST_STOCK(그 달 총 예측수량). */
@@ -216,13 +216,16 @@ export function computeShipTables(
 
             let daily: number;
             if (logicMode === "default_manual") {
-                // 1일치 예상출고량 추세: 발주(PO)와 달리 근시일 수요라 먼 구간(추세4/5)은 안 보고, 추세3(60~90일/
-                // 30~60일)부터 본다. 추세3이 100%(=1.0) 이상이면 그대로 쓰고, 미만이면 추세2, 그마저 미만이면
-                // 추세1을 시도한다. 셋 다 100% 미만(추세 없음/하락)이면 보정 없이 baseDaily 그대로 보여준다.
-                const shipTrend = trendRatios[2] >= 1 ? trendRatios[2]
-                    : trendRatios[1] >= 1 ? trendRatios[1]
-                    : trendRatios[0] >= 1 ? trendRatios[0]
-                    : 1;
+                // 1일치 예상출고량 추세: 이 창고의 리드타임(lt)이 속한 30일 구간의 추세부터 캐스케이드로
+                // 아래 구간까지 시도한다 — 추세N은 [(N-1)*30, N*30)일 구간을 나타내므로 lt가 속한 구간은
+                // floor(lt/30)+1번째(=ratios 인덱스 floor(lt/30))다. 예: lt=72(60~90일)면 추세3부터,
+                // lt=92(90~120일)면 추세4부터. 그 구간이 100%(=1.0) 이상이면 그대로 쓰고, 미만이면 한 단계
+                // 아래 구간을 시도한다. 전부 100% 미만(추세 없음/하락)이면 보정 없이 baseDaily 그대로 보여준다.
+                const startIdx = Math.min(trendRatios.length - 1, Math.floor(lt / 30));
+                let shipTrend = 1;
+                for (let i = startIdx; i >= 0; i--) {
+                    if (trendRatios[i] >= 1) { shipTrend = trendRatios[i]; break; }
+                }
                 daily = newProductDaily(cy7, cy28, cy56) * shipTrend;
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
