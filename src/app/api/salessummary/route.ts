@@ -217,30 +217,6 @@ const TREND_WINDOW_BOUNDS: { key: keyof TrendMedians; startDaysAgo: number; endD
     { key: "w5", startDaysAgo: 245, endDaysAgo: 215 },
 ];
 
-function formatDate(d: Date, endOfDay: boolean): string {
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day} ${endOfDay ? "23:59:59" : "00:00:00"}`;
-}
-
-/** Shipping Plan ETD 필터 범위: 이번 주(월요일 시작) 기준 지난주~다음주(3주치)의 월~일. */
-function getShipPlanEtdRange(): { start: string; end: string } {
-    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
-    pstNow.setHours(0, 0, 0, 0);
-    const dow = pstNow.getDay(); // 0=Sun..6=Sat
-    const daysSinceMonday = (dow + 6) % 7;
-    const mondayThisWeek = new Date(pstNow);
-    mondayThisWeek.setDate(mondayThisWeek.getDate() - daysSinceMonday);
-
-    const startDate = new Date(mondayThisWeek);
-    startDate.setDate(startDate.getDate() - 7); // 지난주 월요일
-    const endDate = new Date(mondayThisWeek);
-    endDate.setDate(endDate.getDate() + 13); // 다음주 일요일
-
-    return { start: formatDate(startDate, false), end: formatDate(endDate, true) };
-}
-
 //SUMMARY QUERY
 const SUMMARY_QUERY = `
     WITH all_skus AS (
@@ -366,7 +342,6 @@ const SUMMARY_QUERY = `
     LEFT JOIN [HGBC].[RPA].[TB_SHIPPING_PLAN_STOCK] p
         ON a.SKU = p.ITM_ID
         AND p.GATH_DE = (SELECT MAX(GATH_DE) FROM [HGBC].[RPA].[TB_SALES_STOCK_SUMMARY])
-        AND (p.ETD IS NULL OR p.ETD = '' OR p.ETD BETWEEN @etdStart AND @etdEnd)
 
     GROUP BY
         s.OWNR_ETP_CD, a.SKU, s.GATH_DE, s.GATH_DT,
@@ -415,11 +390,8 @@ const SUMMARY_QUERY = `
 export async function GET() {
     try {
         const db = await getDb();
-        const { start: etdStart, end: etdEnd } = getShipPlanEtdRange();
         const result = await db
             .request()
-            .input("etdStart", sql.VarChar, etdStart)
-            .input("etdEnd", sql.VarChar, etdEnd)
             .query<SummaryRow>(SUMMARY_QUERY);
 
         const rows = result.recordset;
