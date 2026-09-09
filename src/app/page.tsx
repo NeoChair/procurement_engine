@@ -5,6 +5,7 @@ import PoTable from "@/components/poTable";
 import PoTable2 from "@/components/poTable2";
 import ShipTable1 from "@/components/shipTable1";
 import ShipTable2 from "@/components/shipTable2";
+import PoManageTable from "@/components/poManageTable";
 import SummaryBoard from "@/components/summaryBoard";
 import SidebarFilter, { type FilterState } from "@/components/sidebarFilters";
 import ForecastManage from "@/components/forecastManage";
@@ -19,7 +20,7 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export default function Home() {
-    const [activeTab, setActiveTab] = useState<"po" | "ship">("po");
+    const [activeTab, setActiveTab] = useState<"po" | "ship" | "pomanage">("po");
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
     const [snapshotDate, setSnapshotDate] = useState<string | null | undefined>(undefined);
 
@@ -71,9 +72,27 @@ export default function Home() {
                                 🚢 선적 엔진
                             </button>
                         </li>
+                        <li>
+                            <button
+                                id="poManageTab"
+                                type="button"
+                                role="tab"
+                                aria-selected={activeTab === "pomanage"}
+                                onClick={() => setActiveTab("pomanage")}
+                                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                                    activeTab === "pomanage"
+                                        ? "border-b-2 border-[rgb(255,75,75)] text-[rgb(255,75,75)]"
+                                        : "text-gray-500"
+                                }`}
+                            >
+                                📑 PO 목록
+                            </button>
+                        </li>
                     </ul>
 
-                    <SummaryBoard filters={filters} activeTab={activeTab} onSnapshotDate={setSnapshotDate} />
+                    {activeTab !== "pomanage" && (
+                        <SummaryBoard filters={filters} activeTab={activeTab} onSnapshotDate={setSnapshotDate} />
+                    )}
 
                     <hr className="border-gray-300 my-4" />
 
@@ -98,6 +117,12 @@ export default function Home() {
 
                                 <h2 className="text-3xl font-bold mb-4">🚢 선적 Table 2 (선적수량)</h2>
                                 <ShipTable2 filters={filters} />
+                            </div>
+                        )}
+                        {activeTab === "pomanage" && (
+                            <div id="tab3" role="tabpanel" aria-labelledby="poManageTab">
+                                <h2 className="text-3xl font-bold mb-4">📑 PO 목록 (PO 번호별 SKU/수량/창고)</h2>
+                                <PoManageTable filters={filters} />
                             </div>
                         )}
                     </div>
