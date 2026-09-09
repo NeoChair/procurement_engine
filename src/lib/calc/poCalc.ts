@@ -85,8 +85,8 @@ export function computePoCalc(
 
             const oh = sumParts(r, parts, "STOCK");
             const it = sumParts(r, parts, "INTRANSIT_STOCK");
-            const shipPlan = sumParts(r, parts, "SHIPPLAN_QTY") +
-                (wh === "CA" ? ((r.CA1_SHIPPLAN_QTY as number) ?? 0) : 0);
+            const shipPlan = sumParts(r, parts, "PRODUCTION_PLAN_QTY") +
+                (wh === "CA" ? ((r.CA1_PRODUCTION_PLAN_QTY as number) ?? 0) : 0);
 
             perWh[wh] = { oh, it, shipPlan, daily, actualRatio };
         }
@@ -179,7 +179,7 @@ export function computePoCalc(
     return result;
 }
 
-/** SKU+창고 행을 SKU 단위로 합산한 발주 결정용 뷰. 재고/입고/선적계획/발주량은 합산, daily는 창고별 판매율의 총합. */
+/** SKU+창고 행을 SKU 단위로 합산한 발주 결정용 뷰. 재고/입고/생산계획/발주량은 합산, daily는 창고별 판매율의 총합. */
 export type PoCalcRowAgg = {
     sku: string;
     oh: number;

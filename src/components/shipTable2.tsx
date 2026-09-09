@@ -139,7 +139,7 @@ function buildShip2Columns(
         { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
         { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
         { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
-        { key: "SP",       label: "선적계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
+        { key: "SP",       label: "생산계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
         { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => nd(r.manualDaily ?? r.daily) },
         { key: "NEED28",   label: "28일치 예상출고량", align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
         { ...weekColumn("shipQty", "선적량"), key: "SHIP_QTY" },
