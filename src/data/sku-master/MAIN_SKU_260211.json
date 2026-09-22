@@ -1449,6 +1449,42 @@
     "NJ": "TRUE"
   },
   {
+    "SKU": "CHA-PU-DIA-BK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-DIA-BR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-DIA-CR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-PU-DIA-GY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
     "SKU": "CHA-MT-CEN-BK",
     "IsOn": "FALSE",
     "Factory": "YB",
@@ -1843,6 +1879,51 @@
     "TX": "FALSE",
     "LA": "FALSE",
     "NJ": "FALSE"
+  },
+  {
+    "SKU": "CHA-HC-CLD-FBGY",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CLD-RSWH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CLD-TDPK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CLD-TDWH",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "CHA-HC-CLD-VLBK",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
   },
   {
     "SKU": "MAT-ME-BA-5T",
