@@ -261,6 +261,15 @@
     "NJ": "TRUE"
   },
   {
+    "SKU": "CHA-MS-M28-PR",
+    "IsOn": "TRUE",
+    "Factory": "MT",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
     "SKU": "CHA-MS-NEC-BG",
     "IsOn": "TRUE",
     "Factory": "MT",
