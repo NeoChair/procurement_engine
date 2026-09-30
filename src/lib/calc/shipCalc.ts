@@ -16,7 +16,7 @@ const fixed42daysSKU = ["CHA-MS-CPS-BK", "CHA-MS-M28-BK", "CHA-MS-M28-PK", "CHA-
 export type WhKey = "CA" | "NJ" | "GA" | "TX" | "WF";
 
 export const WH_GROUPS: Record<WhKey, { parts: string[]; lt: number }> = {
-    CA:  { parts: ["CA", "CA2"], lt: 72  },
+    CA:  { parts: ["CA", "CA2", "CA3"], lt: 72  },
     NJ:  { parts: ["NJ"],        lt: 92  },
     GA:  { parts: ["GA", "GA2", "SC"], lt: 92  },
     TX:  { parts: ["TX"],        lt: 92  },

@@ -46,13 +46,14 @@ const WRHS_LABELS: Record<string, string> = {
     "14634": "NJ",
     "14635": "SC",
     "14636": "TX",
+    "24374": "CA3",
 };
 
 function whLabel(code: string): string {
     return WRHS_LABELS[code] ?? code;
 }
 
-// 사이드바 "창고 필터"(CA/GA/NJ/TX/WF 5개 그룹) 매칭용. shipCalc.ts의 WH_GROUPS와 동일하게 CA/CA2->CA, GA/GA2/SC->GA로 묶는다.
+// 사이드바 "창고 필터"(CA/GA/NJ/TX/WF 5개 그룹) 매칭용. shipCalc.ts의 WH_GROUPS와 동일하게 CA/CA2/CA3->CA, GA/GA2/SC->GA로 묶는다.
 const WRHS_GROUPS: Record<string, string> = {
     "0": "WF",
     "14361": "CA",
@@ -63,6 +64,7 @@ const WRHS_GROUPS: Record<string, string> = {
     "14634": "NJ",
     "14635": "GA",
     "14636": "TX",
+    "24374": "CA",
 };
 
 function whGroup(code: string): string {
