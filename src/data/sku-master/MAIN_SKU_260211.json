@@ -873,6 +873,15 @@
     "NJ": "TRUE"
   },
   {
+    "SKU": "CHA-GM-PCC-PUBR",
+    "IsOn": "TRUE",
+    "Factory": "HR",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
     "SKU": "CHA-GM-ABT-PUBK",
     "IsOn": "TRUE",
     "Factory": "HR",
