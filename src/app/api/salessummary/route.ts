@@ -120,13 +120,24 @@ export interface SummaryRow {
     WF_PRODUCTION_PLAN_QTY: number;
 }
 
-/** SKU별 최근 84일(PST) 실제 CA/TX/NJ/GA 창고 출고 비율 (합계 = 1). */
+/**
+ * SKU별 실제 CA/TX/NJ/GA 창고 출고 비율 (합계 = 1).
+ * 4개 창고 모두 재고가 있던 날(clean day)만 최근부터 최대 84일 모아서 계산한다.
+ * 한 창고가 OOS면 그 창고 주문이 다른 창고(주로 GA)로 넘어가 비율이 왜곡되기 때문.
+ */
 export type ShipRatio84d = {
     CA: number;
     TX: number;
     NJ: number;
     GA: number;
 };
+
+/** clean day로 모을 최대 일수 */
+const CLEAN_MAX_DAYS = 84;
+/** 이 수량 미만이면 재고 없음으로 본다 (재고가 적으면 주문이 이미 다른 창고로 넘어감) */
+const CLEAN_MIN_STOCK = 30;
+/** 이 날짜 이전은 창고 라우팅이 달라서 쓰지 않는다 */
+const CLEAN_START_DATE = "2026-04-01";
 
 type WhShipRow = {
     SKU: string;
@@ -136,7 +147,7 @@ type WhShipRow = {
     GA_QTY: number;
 };
 
-//출고 비율 쿼리
+//출고 비율 쿼리 (clean day가 하나도 없는 SKU용 기존 84일 단순 비율)
 const WH_SHIP_84D_QUERY = `
     SELECT
         pg.INVT_SKU AS SKU,
@@ -150,6 +161,42 @@ const WH_SHIP_84D_QUERY = `
       AND pg.INVT_SKU <> ''
       AND o.WAREHOUSE IN ('14630', '14631', '14632', '14633', '14634', '14635', '14636', '24374')
     GROUP BY pg.INVT_SKU
+`;
+
+type WhShipDailyRow = WhShipRow & { D: string };
+
+// SKU+일자별 창고그룹 출고수량 (WH_SHIP_84D_QUERY와 같은 창고코드)
+const WH_SHIP_DAILY_QUERY = `
+    SELECT
+        pg.INVT_SKU AS SKU,
+        CONVERT(char(10), CAST(o.ORD_DE AS DATE), 23) AS D,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14630', '14631', '24374') THEN o.QTY ELSE 0 END) AS CA_QTY,
+        SUM(CASE WHEN o.WAREHOUSE = '14636' THEN o.QTY ELSE 0 END) AS TX_QTY,
+        SUM(CASE WHEN o.WAREHOUSE = '14634' THEN o.QTY ELSE 0 END) AS NJ_QTY,
+        SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635') THEN o.QTY ELSE 0 END) AS GA_QTY
+    FROM [HGBC].[SD].[TB_ORD_DAIL] o
+    JOIN (SELECT DISTINCT ITM_ID, INVT_SKU FROM [HGBC].[SD].[TB_PROD_GROUP]) pg ON o.ITM_ID = pg.ITM_ID
+    WHERE o.ORD_DE >= @startDate AND o.ORD_DE < @endDate
+      AND pg.INVT_SKU <> ''
+      AND o.WAREHOUSE IN ('14630', '14631', '14632', '14633', '14634', '14635', '14636', '24374')
+    GROUP BY pg.INVT_SKU, CAST(o.ORD_DE AS DATE)
+`;
+
+type WhStockSnapRow = { SKU: string; GATH_DE: string; CA: number; TX: number; NJ: number; GA: number };
+
+// 스냅샷(GATH_DE = 'YYYYMMDDAM/PM')별 SKU 창고그룹 재고
+const WH_STOCK_SNAP_QUERY = `
+    SELECT
+        b.SKU,
+        b.GATH_DE,
+        SUM(CASE WHEN b.WH_CD IN ('14630', '14631', '24374') THEN b.STOCK ELSE 0 END) AS CA,
+        SUM(CASE WHEN b.WH_CD = '14636' THEN b.STOCK ELSE 0 END) AS TX,
+        SUM(CASE WHEN b.WH_CD = '14634' THEN b.STOCK ELSE 0 END) AS NJ,
+        SUM(CASE WHEN b.WH_CD IN ('14632', '14633', '14635') THEN b.STOCK ELSE 0 END) AS GA
+    FROM [HGBC].[RPA].[TB_SALES_STOCK_SUMMARY_BACKUP] b
+    WHERE b.WH_CD IN ('14630', '14631', '24374', '14636', '14634', '14632', '14633', '14635')
+      AND LEFT(b.GATH_DE, 8) >= @startYmd AND LEFT(b.GATH_DE, 8) < @endYmd
+    GROUP BY b.SKU, b.GATH_DE
 `;
 
 /** 오늘(PST) 기준 daysAgo일 전 00:00:00(PST) 문자열을 반환한다. */
@@ -338,16 +385,63 @@ export async function GET() {
             .input("cutoffDate", sql.VarChar, getPstCutoffDate(84))
             .query<WhShipRow>(WH_SHIP_84D_QUERY);
 
+        const toRatio = (q: { CA: number; TX: number; NJ: number; GA: number }): ShipRatio84d | null => {
+            const total = q.CA + q.TX + q.NJ + q.GA;
+            if (total <= 0) return null;
+            return { CA: q.CA / total, TX: q.TX / total, NJ: q.NJ / total, GA: q.GA / total };
+        };
+
+        // 기본값: 기존 84일 단순 비율 (clean day가 없는 SKU는 이 값을 그대로 쓴다)
         const shipRatio84d: Record<string, ShipRatio84d> = {};
         for (const r of whShipResult.recordset) {
-            const total = r.CA_QTY + r.TX_QTY + r.NJ_QTY + r.GA_QTY;
-            if (total <= 0) continue;
-            shipRatio84d[r.SKU] = {
-                CA: r.CA_QTY / total,
-                TX: r.TX_QTY / total,
-                NJ: r.NJ_QTY / total,
-                GA: r.GA_QTY / total,
-            };
+            const ratio = toRatio({ CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY });
+            if (ratio) shipRatio84d[r.SKU] = ratio;
+        }
+
+        // clean day 비율: 날짜의 모든 스냅샷에서 4개 창고 재고가 전부 CLEAN_MIN_STOCK 이상인 날만,
+        // 최근부터 최대 CLEAN_MAX_DAYS일 모아 출고 비율을 낸다. 오늘(PST)은 주문이 덜 쌓였으므로 제외.
+        const today = getPstDateOnly(0);
+        const [stockSnapResult, whShipDailyResult] = await Promise.all([
+            db.request()
+                .input("startYmd", sql.VarChar, CLEAN_START_DATE.replace(/-/g, ""))
+                .input("endYmd", sql.VarChar, today.replace(/-/g, ""))
+                .query<WhStockSnapRow>(WH_STOCK_SNAP_QUERY),
+            db.request()
+                .input("startDate", sql.VarChar, `${CLEAN_START_DATE} 00:00:00`)
+                .input("endDate", sql.VarChar, `${today} 00:00:00`)
+                .query<WhShipDailyRow>(WH_SHIP_DAILY_QUERY),
+        ]);
+
+        const cleanBySku = new Map<string, Map<string, boolean>>(); // SKU → 날짜 → clean 여부
+        for (const r of stockSnapResult.recordset) {
+            const d = `${r.GATH_DE.slice(0, 4)}-${r.GATH_DE.slice(4, 6)}-${r.GATH_DE.slice(6, 8)}`;
+            const ok = RATIO_WAREHOUSES.every((wh) => (r[wh] ?? 0) >= CLEAN_MIN_STOCK);
+            if (!cleanBySku.has(r.SKU)) cleanBySku.set(r.SKU, new Map());
+            const m = cleanBySku.get(r.SKU)!;
+            m.set(d, (m.get(d) ?? true) && ok);
+        }
+
+        const shipDailyBySku = new Map<string, Map<string, WhShipDailyRow>>();
+        for (const r of whShipDailyResult.recordset) {
+            if (!shipDailyBySku.has(r.SKU)) shipDailyBySku.set(r.SKU, new Map());
+            shipDailyBySku.get(r.SKU)!.set(r.D, r);
+        }
+
+        for (const [sku, dayMap] of cleanBySku) {
+            const cleanDays = [...dayMap.entries()]
+                .filter(([, ok]) => ok)
+                .map(([d]) => d)
+                .sort()
+                .reverse()
+                .slice(0, CLEAN_MAX_DAYS);
+            const sum = { CA: 0, TX: 0, NJ: 0, GA: 0 };
+            for (const d of cleanDays) {
+                const o = shipDailyBySku.get(sku)?.get(d);
+                if (!o) continue;
+                sum.CA += o.CA_QTY; sum.TX += o.TX_QTY; sum.NJ += o.NJ_QTY; sum.GA += o.GA_QTY;
+            }
+            const ratio = toRatio(sum);
+            if (ratio) shipRatio84d[sku] = ratio;
         }
 
         //console.log(shipRatio84d);
