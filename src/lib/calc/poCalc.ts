@@ -3,9 +3,23 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap } from "./shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
+import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
+
+type MainSkuRecord = { SKU: string; Factory: string };
 
 const PO_NEED_DAYS = 45;
 export const PO_HORIZON_DAYS = 120;
+export const PO_HORIZON_DAYS_SHORT = 90;
+const SHORT_HORIZON_FACTORIES = new Set(["TYJ", "DMS"]);
+
+const FACTORY_BY_SKU = new Map(
+    (mainSkuData as MainSkuRecord[]).map((r) => [r.SKU, r.Factory])
+);
+
+/** TYJ·DMS 공장 SKU는 발주 기간이 90일, 나머지는 120일. */
+export function poHorizonDays(sku: string): number {
+    return SHORT_HORIZON_FACTORIES.has(FACTORY_BY_SKU.get(sku) ?? "") ? PO_HORIZON_DAYS_SHORT : PO_HORIZON_DAYS;
+}
 
 export type PoCalcRow = {
     key: string;
@@ -41,12 +55,13 @@ export function computePoCalc(
 ): PoCalcRow[] {
     const result: PoCalcRow[] = [];
     const useManual = logicMode === "manual" || logicMode === "default_manual";
-    // 발주는 창고 리드타임(lt)이 아니라 PO_HORIZON_DAYS(120일) 기준으로 미래를 내다보므로,
-    // 매뉴얼 예측치 대상월도 lt가 아니라 PO_HORIZON_DAYS로 계산해야 한다(선적 엔진과는 기준이 다름).
-    const manualYm = useManual ? manualTargetYm(PO_HORIZON_DAYS, true) : null;
-
     for (const r of rows) {
         if (isDrop(r.SKU)) continue;
+
+        // 발주는 창고 리드타임(lt)이 아니라 발주 기간(기본 120일, TYJ·DMS 90일) 기준으로 미래를 내다보므로,
+        // 매뉴얼 예측치 대상월도 lt가 아니라 발주 기간으로 계산해야 한다(선적 엔진과는 기준이 다름).
+        const horizonDays = poHorizonDays(r.SKU);
+        const manualYm = useManual ? manualTargetYm(horizonDays, true) : null;
 
         // 매뉴얼 예측치(FRCST_STOCK)는 SKU 전체 기준 "일 예상판매량"이라 창고별로 쪼갤 이유가 없다.
         // 예전엔 84일 실출고비율로 창고별로 나눴다가 합산할 때 다시 더했는데, 그 과정에서 부동소수점
@@ -93,7 +108,7 @@ export function computePoCalc(
 
         function pushRow(keySuffix: string, wh: WhKey, oh: number, it: number, shipPlan: number, trendDaily: number, effectiveDaily: number, manualDaily: number | null, actualRatio: number | null, poPred120Override?: number) {
             const need45d = effectiveDaily * PO_NEED_DAYS;
-            const poPred120 = poPred120Override ?? (effectiveDaily * PO_HORIZON_DAYS);
+            const poPred120 = poPred120Override ?? (effectiveDaily * horizonDays);
             const projected120d = (oh + it + shipPlan) - poPred120;
             const rawPo = Math.max(0, need45d - projected120d);
 
@@ -145,11 +160,9 @@ export function computePoCalc(
             const cy56Sum = r.CURR_YEAR_2MONTH_TOTAL_SALES_QTY ?? 0;
 
             const baseDaily = newProductDaily(cy7Sum, cy28Sum, cy56Sum);
-            const { ratios, trend } = medianTrend(trendMedians[r.SKU]);
-            // "120일 이후 예상 판매량"(화면 daily 필드)는 baseDaily에 최종 추세(구간차 캐스케이드)를 곱한다.
-            const effectiveDaily = baseDaily * trend;
+            const { ratios } = medianTrend(trendMedians[r.SKU]);
 
-            // 120일치 예상판매량: 추세를 곱하지 않은 baseDaily에, 4구간(30일씩 120일)마다 그 구간 자체의
+            // 발주 기간치 예상판매량: 추세를 곱하지 않은 baseDaily에, 30일 구간(120일=4구간, 90일=3구간)마다 그 구간 자체의
             // 배수를 곱해서 더한다. 각 구간(idx)은 자기 위치부터 거꾸로 medianTrend와 같은 캐스케이드를 다시
             // 태운다: (추세idx - 추세(idx-1)) 차이가 0 이상(증가)인 첫 지점을 배수로 쓰되, 두 추세가 둘 다
             // 1 미만이면 그 pair는 건너뛴다. 못 찾으면 추세1 자체(1 이상일 때만), 그마저 없으면 1배.
@@ -161,7 +174,13 @@ export function computePoCalc(
                 }
                 return ratios[0] >= 1 ? ratios[0] : 1;
             };
-            const poPred120 = [0, 1, 2, 3].reduce((sum, i) => sum + baseDaily * resolvedTermTrend(i) * 30, 0);
+            const termCount = horizonDays / 30;
+            let poPred120 = 0;
+            for (let i = 0; i < termCount; i++) poPred120 += baseDaily * resolvedTermTrend(i) * 30;
+
+            // "발주 기간 이후 예상 판매량"(화면 daily 필드, 45일치 필요재고의 기준)은 발주 기간 바로 다음 구간의
+            // 배수를 곱한다. 120일이면 idx 4(120~150일) = medianTrend의 최종 추세와 같고, 90일이면 idx 3(90~120일).
+            const effectiveDaily = baseDaily * resolvedTermTrend(termCount);
 
             pushRow("ALL", "CA", ohSum, itSum, spSum, effectiveDaily, effectiveDaily, null, null, poPred120);
         } else {

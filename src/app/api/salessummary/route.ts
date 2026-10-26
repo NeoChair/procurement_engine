@@ -2,6 +2,7 @@ import { getDb } from "@/lib/db";
 import { NextResponse } from "next/server";
 import sql from "mssql";
 import { RATIO_WAREHOUSES, type RatioWh } from "@/lib/calc/rebalance";
+import { isHiddenSku } from "@/lib/calc/logicMode";
 
 export interface SummaryRow {
     OWNR_ETP_CD: string;
@@ -375,7 +376,7 @@ export async function GET() {
             .request()
             .query<SummaryRow>(SUMMARY_QUERY);
 
-        const rows = result.recordset;
+        const rows = result.recordset.filter((r) => !isHiddenSku(r.SKU));
         // rows[0]이 TB_SHIPPING_PLAN_STOCK에만 존재하는 SKU면 LEFT JOIN으로 GATH_DT가 NULL이 될 수 있으므로
         // 첫 번째 non-null 값을 찾는다.
         const snapshotDate = rows.find((r) => r.GATH_DT)?.GATH_DT ?? null;

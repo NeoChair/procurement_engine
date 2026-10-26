@@ -9,6 +9,12 @@ const FORCE_NEW_SKU_PREFIXES = [
 const FORCE_NEW_SKUS_EXACT = new Set(["CHA-MS-CPS-BK-2PK"]);
 const DROP_SKU_PREFIXES = ["CHA-MT-CVS"];
 const DROP_SKUS_EXACT = new Set(["CHA-PU-BLC-IV"]);
+// 잘못 입력된 SKU: API 응답에서부터 빼서 발주/선적 모든 테이블에 안 나오게 한다(정확히 일치할 때만).
+const HIDDEN_SKUS_EXACT = new Set(["MS-DBSH-PR"]);
+
+export function isHiddenSku(sku: string): boolean {
+    return HIDDEN_SKUS_EXACT.has(sku.trim());
+}
 
 export function isForceNew(sku: string): boolean {
     const s = sku.trim();
