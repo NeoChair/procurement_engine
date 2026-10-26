@@ -30,8 +30,8 @@ function buildColumns(logicMode: FilterState["logicMode"]): DataTableColumn<Disp
         { key: "OH",      label: "현재고",            align: "right", getValue: r => r.oh ?? 0,       render: r => n(r.oh) },
         { key: "IT",      label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,       render: r => n(r.it) },
         { key: "SP",      label: "생산계획",          align: "right", getValue: r => r.shipPlan ?? 0, render: r => n(r.shipPlan) },
-        { key: "DAILY",   label: "120일 이후 예상 판매량", align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => n(r.manualDaily ?? r.daily) },
-        { key: "PRED120", label: "120일치 예상판매량", align: "right", getValue: r => r.poPred120 ?? 0, render: r => n(r.poPred120) },
+        { key: "DAILY",   label: "120일 이후 예상 판매량 (TYJ·DMS 90일)", align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => n(r.manualDaily ?? r.daily) },
+        { key: "PRED120", label: "120일치 예상판매량 (TYJ·DMS 90일)", align: "right", getValue: r => r.poPred120 ?? 0, render: r => n(r.poPred120) },
         { key: "NEED45",  label: "45일치 필요재고",    align: "right", getValue: r => r.need45d ?? 0,  render: r => n(r.need45d) },
         {
             key: "FINAL_PO", label: "발주량", align: "right",

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
 import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
-import { PO_HORIZON_DAYS } from "@/lib/calc/poCalc";
+import { PO_HORIZON_DAYS, PO_HORIZON_DAYS_SHORT } from "@/lib/calc/poCalc";
 
 export type FilterState = {
     skuQuery: string;
@@ -493,6 +493,8 @@ export default function SidebarFilter({
 
                     {(filters.logicMode === "manual" || filters.logicMode === "default_manual") && (() => {
                         const poYm = manualTargetYm(PO_HORIZON_DAYS, true);
+                        const poShortYm = manualTargetYm(PO_HORIZON_DAYS_SHORT, true);
+                        const poShortHasData = availableYms.has(poShortYm);
                         const caYm = manualTargetYm(WH_GROUPS.CA.lt);
                         const njYm = manualTargetYm(WH_GROUPS.NJ.lt);
                         const poHasData = availableYms.has(poYm);
@@ -503,6 +505,9 @@ export default function SidebarFilter({
                                 <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 선적 {formatDate(getManualReferenceDate())} / 발주 {formatDate(getManualReferenceDate(true))} 기준 적용 YM</span>
                                 <span className="text-sm text-gray-500">
                                     📌 발주({PO_HORIZON_DAYS}일): {poHasData ? formatYm(poYm) : "데이터 없음, 미적용"}
+                                </span>
+                                <span className="text-sm text-gray-500">
+                                    📌 발주 TYJ·DMS({PO_HORIZON_DAYS_SHORT}일): {poShortHasData ? formatYm(poShortYm) : "데이터 없음, 미적용"}
                                 </span>
                                 <span className="text-sm text-gray-500">
                                     📌 선적 CA({WH_GROUPS.CA.lt}일): {caHasData ? formatYm(caYm) : "데이터 없음, 미적용"}
