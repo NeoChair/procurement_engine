@@ -2860,5 +2860,149 @@
     "TX": "TRUE",
     "LA": "TRUE",
     "NJ": "FALSE"
+  },
+  {
+    "SKU": "TB-SN-13ST-SS",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-13ST-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-13ST-WH",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-16ST-SS",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-16ST-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-16ST-WH",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-13SP-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-13SP-BR",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-SN-13SP-WH",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-13ST-SS",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-13ST-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-13ST-WH",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-13ST-BR",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-13SP-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-1P6ST-BK",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
+  },
+  {
+    "SKU": "TB-PD-1P6ST-WH",
+    "IsOn": "TRUE",
+    "Factory": "CY",
+    "AT": "TRUE",
+    "TX": "TRUE",
+    "LA": "TRUE",
+    "NJ": "TRUE"
   }
 ]

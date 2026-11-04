@@ -233,6 +233,7 @@ const FACTORY_OPTIONS: Option[] = [
     { value: "MD", label: "MD" },
     { value: "YB", label: "YB" },
     { value: "DMS", label: "DMS" },
+    { value: "CY", label: "CY" },
 ];
 
 const WAREHOUSE_OPTIONS: Option[] = [
