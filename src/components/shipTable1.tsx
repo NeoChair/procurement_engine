@@ -6,6 +6,7 @@ import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
 import { computeShipTables, type Ship1Row, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { isWhOn } from "@/lib/calc/skuRules";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -73,7 +74,7 @@ export default function ShipTable1({ filters }: { filters: FilterState }) {
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
         const tables = computeShipTables(rows, skuMeta, filters.logicMode, undefined, undefined, undefined, undefined, trendMediansByWh);
-        return applyFilters(tables.table1, filters);
+        return applyFilters(tables.table1.filter(row => isWhOn(row.sku, row.wh)), filters);
     }, [rows, filters, trendMediansByWh]);
 
     if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;

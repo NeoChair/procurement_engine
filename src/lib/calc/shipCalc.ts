@@ -2,6 +2,7 @@
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
+import { isWhOn } from "./skuRules";
 
 /** default_manual 모드 선적 추세 계산용: SKU+창고별 작년 오늘 -30일~+150일 6구간(30일씩) 판매 중위값. */
 export type TrendMedianByWhMap = Record<string, Partial<Record<RatioWh, TrendMedianWindow>>>;
@@ -256,9 +257,14 @@ export function computeShipTables(
             const projectedAfterPeriod = avail - predPeriod;
             const rawShip = Math.max(0, need28d - projectedAfterPeriod);
             
+            // MAIN_SKU에서 이 창고가 FALSE면 선적하지 않는다 — 1~5주차 전부 0.
+            const whOn = isWhOn(r.SKU, wh);
+
             // cap씌우는 부분 (Manual 포함 전체 캡 적용)
-            const shipQty = Math.round(Math.min(rawShip, Math.max(0, need28d)));
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, true);
+            const shipQty = whOn ? Math.round(Math.min(rawShip, Math.max(0, need28d))) : 0;
+            const { week2, week3, week4, week5 } = whOn
+                ? rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, true)
+                : { week2: 0, week3: 0, week4: 0, week5: 0 };
             
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
@@ -288,7 +294,7 @@ export function computeShipTables(
                 manualDaily: manualDaily == null ? null : Math.round(manualDaily * 100) / 100,
                 need28d, shipQty,
                 week2, week3, week4, week5,
-                rebalanceFlag: "", shock, actualRatio,
+                rebalanceFlag: whOn ? "" : "⚫ 창고 OFF", shock, actualRatio,
                 dsiDays: dsiDays == null ? null : Math.round(dsiDays * 10) / 10,
                 dsiStatus,
             });
@@ -316,7 +322,11 @@ function applyRebalance(
         else bySku.set(row.sku, [row]);
     }
 
-    for (const [sku, rows] of bySku.entries()) {
+    for (const [sku, allRows] of bySku.entries()) {
+        // MAIN_SKU에서 FALSE인 창고는 재배분에서 아예 뺀다 — 선적량 0 유지, 비율은 남은 창고끼리 다시 맞춤.
+        // FALSE 창고의 원래 몫은 남은 창고로 넘기지 않는다(그 창고 수요는 사라진 것으로 봄).
+        const rows = allRows.filter(r => isWhOn(sku, r.wh));
+        if (rows.length === 0) continue;
         const input = rows.map(r => ({
             wh: r.wh as RatioWh,
             oh: r.oh,
