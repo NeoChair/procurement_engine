@@ -6,7 +6,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-801-GY",
@@ -15,7 +15,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-801-BL",
@@ -24,7 +24,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-801-PK",
@@ -33,7 +33,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-801-SB",
@@ -42,7 +42,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-BK",
@@ -60,7 +60,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-GY",
@@ -69,7 +69,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-IV",
@@ -78,7 +78,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-PK",
@@ -87,7 +87,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-SB",
@@ -96,7 +96,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-CPS-BK-2PK",
@@ -105,7 +105,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBS-BG",
@@ -114,7 +114,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBS-BK",
@@ -132,7 +132,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBS-PK",
@@ -141,7 +141,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBS-PR",
@@ -150,7 +150,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBSH-BG",
@@ -159,7 +159,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBSH-BK",
@@ -168,7 +168,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBSH-GY",
@@ -177,7 +177,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBSH-PK",
@@ -186,7 +186,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-DBSH-PR",
@@ -195,7 +195,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-M28-BK",
@@ -213,7 +213,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-M28-PM",
@@ -222,7 +222,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-M28-PP",
@@ -231,7 +231,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-M28-IV",
@@ -249,7 +249,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-M28-PK",
@@ -267,7 +267,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-NEC-BG",
@@ -276,7 +276,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-NEC-BK",
@@ -294,7 +294,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-NEC-IV",
@@ -321,7 +321,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBS-BK",
@@ -330,7 +330,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBS-BG",
@@ -339,7 +339,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBS-GY",
@@ -348,7 +348,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBS-PK",
@@ -357,7 +357,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBS-PR",
@@ -366,7 +366,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBSH-BK",
@@ -375,7 +375,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBSH-BG",
@@ -384,7 +384,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBSH-GY",
@@ -393,7 +393,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBSH-PK",
@@ -402,7 +402,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STDBSH-PR",
@@ -411,7 +411,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-BG",
@@ -420,7 +420,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-BK",
@@ -429,7 +429,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-GY",
@@ -438,7 +438,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-IV",
@@ -447,7 +447,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-PK",
@@ -456,7 +456,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-STNEC-PR",
@@ -465,7 +465,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-ETC-BK",
@@ -483,7 +483,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-ETC-GY",
@@ -492,7 +492,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-ETC-PK",
@@ -501,7 +501,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MS-N20-BK",
@@ -636,7 +636,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-APEX-BL",
@@ -645,7 +645,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-APEX-GY",
@@ -654,7 +654,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-APEX-PK",
@@ -663,7 +663,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-APEX-RD",
@@ -672,7 +672,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-APEX-WH",
@@ -681,7 +681,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NEX-BK",
@@ -699,7 +699,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NEX-PK",
@@ -708,7 +708,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NEX-RD",
@@ -717,7 +717,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NEX-WH",
@@ -726,7 +726,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-BK",
@@ -735,7 +735,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-BL",
@@ -744,7 +744,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-GY",
@@ -753,7 +753,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-GR",
@@ -762,7 +762,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-PR",
@@ -771,7 +771,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-TTN-PK",
@@ -780,7 +780,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NYX-BK",
@@ -789,7 +789,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NYX-WH",
@@ -798,7 +798,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NYX-RD",
@@ -807,7 +807,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NYX-BL",
@@ -816,7 +816,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-NYX-PR",
@@ -825,7 +825,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-PUBK",
@@ -834,7 +834,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-PUWH",
@@ -843,7 +843,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-PUPK",
@@ -852,7 +852,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-FBBL",
@@ -861,7 +861,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-FBGR",
@@ -870,7 +870,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-PCC-PUBR",
@@ -879,7 +879,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-GM-ABT-PUBK",
@@ -924,7 +924,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZY-GY",
@@ -933,7 +933,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZY-BL",
@@ -942,7 +942,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZY-BR",
@@ -951,7 +951,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZY-PK",
@@ -960,7 +960,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZY-MN",
@@ -969,7 +969,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-BG",
@@ -978,7 +978,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-GY",
@@ -987,7 +987,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-BL",
@@ -996,7 +996,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-BR",
@@ -1005,7 +1005,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-PK",
@@ -1014,7 +1014,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-MN",
@@ -1023,7 +1023,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-TDWH",
@@ -1032,7 +1032,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-TDPK",
@@ -1041,7 +1041,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-TDBK",
@@ -1050,7 +1050,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-TDBL",
@@ -1059,7 +1059,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZW-TDGR",
@@ -1068,7 +1068,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-WH",
@@ -1077,7 +1077,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-BK",
@@ -1086,7 +1086,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-PK",
@@ -1095,7 +1095,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-BL",
@@ -1104,7 +1104,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-GR",
@@ -1113,7 +1113,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-TDY-PR",
@@ -1122,7 +1122,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-BG",
@@ -1131,7 +1131,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-GY",
@@ -1140,7 +1140,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-BL",
@@ -1149,7 +1149,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-BR",
@@ -1158,7 +1158,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-PK",
@@ -1167,7 +1167,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZD-MN",
@@ -1176,7 +1176,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZPU-BK",
@@ -1185,7 +1185,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZPU-BR",
@@ -1194,7 +1194,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZPU-GY",
@@ -1203,7 +1203,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZPU-PK",
@@ -1212,7 +1212,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CZPU-IV",
@@ -1221,7 +1221,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-ACT-GR",
@@ -1275,7 +1275,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-BLC-BR",
@@ -1284,7 +1284,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-BLC-GY",
@@ -1293,7 +1293,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-BLC-WH",
@@ -1302,7 +1302,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-BLC-JET",
@@ -1311,7 +1311,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-HPAC-BK",
@@ -1320,7 +1320,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-HPAC-BR",
@@ -1329,7 +1329,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-HPAC-WH",
@@ -1338,7 +1338,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CORE-BK",
@@ -1347,7 +1347,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CORE-WH",
@@ -1356,7 +1356,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CORE-BR",
@@ -1365,7 +1365,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CORE-JET",
@@ -1374,7 +1374,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-BK-N",
@@ -1383,7 +1383,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-BR-N",
@@ -1392,7 +1392,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNT-BK",
@@ -1401,7 +1401,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNT-BR",
@@ -1410,7 +1410,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNT-GY",
@@ -1419,7 +1419,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNT-IV",
@@ -1428,7 +1428,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNTH-BK",
@@ -1437,7 +1437,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNTH-BR",
@@ -1446,7 +1446,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNTH-GY",
@@ -1455,7 +1455,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-VNTH-DB",
@@ -1464,7 +1464,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-DIA-BK",
@@ -1509,7 +1509,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CEN-BR",
@@ -1518,7 +1518,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CENH-BK",
@@ -1527,7 +1527,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CENH-BR",
@@ -1536,7 +1536,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CENH-WH",
@@ -1545,7 +1545,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CEN-WH",
@@ -1554,7 +1554,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUB-BK",
@@ -1563,7 +1563,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUB-BR",
@@ -1572,7 +1572,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUBH-BK",
@@ -1581,7 +1581,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUBH-BR",
@@ -1590,7 +1590,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUBH-WH",
@@ -1599,7 +1599,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CUB-WH",
@@ -1608,7 +1608,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CVS-GN",
@@ -1617,7 +1617,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CVS-GY",
@@ -1626,7 +1626,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CVS-BL",
@@ -1635,7 +1635,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CVS-IV",
@@ -1644,7 +1644,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CEN-H-BK",
@@ -1653,7 +1653,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CEN-H-BR",
@@ -1662,7 +1662,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-MT-CEN-H-WH",
@@ -1671,7 +1671,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CNTT-BK",
@@ -1680,7 +1680,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CNTT-OR",
@@ -1689,7 +1689,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CNTT-WH",
@@ -1698,7 +1698,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MLW-BG",
@@ -1707,7 +1707,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MLW-BL",
@@ -1716,7 +1716,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MLW-BR",
@@ -1725,7 +1725,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MLW-GY",
@@ -1734,7 +1734,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MEW-BG",
@@ -1743,7 +1743,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MEW-GY",
@@ -1752,7 +1752,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MEW-BL",
@@ -1761,7 +1761,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MEW-BR",
@@ -1770,7 +1770,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-MEW-PK",
@@ -1779,7 +1779,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-BLC-IV",
@@ -1788,7 +1788,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-BK",
@@ -1797,7 +1797,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-BR",
@@ -1806,7 +1806,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-GY",
@@ -1815,7 +1815,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-CHMN-IV",
@@ -1824,7 +1824,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PAC-BK",
@@ -1833,7 +1833,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PAC-BR",
@@ -1842,7 +1842,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PACE-BK",
@@ -1851,7 +1851,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PACE-BR",
@@ -1860,7 +1860,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PACE-IV",
@@ -1869,7 +1869,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PACE-JET",
@@ -1878,7 +1878,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PACE-WH",
@@ -1887,7 +1887,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-PU-PAC-JET",
@@ -1896,7 +1896,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "CHA-HC-CLD-FBGY",
@@ -1950,7 +1950,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-5TX",
@@ -1959,7 +1959,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-5F",
@@ -1968,7 +1968,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-5Q",
@@ -1977,7 +1977,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-5K",
@@ -1986,7 +1986,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-5CK",
@@ -1995,7 +1995,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6T",
@@ -2004,7 +2004,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6TX",
@@ -2013,7 +2013,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6F",
@@ -2022,7 +2022,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6Q",
@@ -2031,7 +2031,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6K",
@@ -2040,7 +2040,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-6CK",
@@ -2049,7 +2049,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8T",
@@ -2058,7 +2058,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8TX",
@@ -2067,7 +2067,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8F",
@@ -2076,7 +2076,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8Q",
@@ -2085,7 +2085,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8K",
@@ -2094,7 +2094,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-8CK",
@@ -2103,7 +2103,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10T",
@@ -2112,7 +2112,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10TX",
@@ -2121,7 +2121,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10F",
@@ -2130,7 +2130,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10Q",
@@ -2139,7 +2139,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10K",
@@ -2148,7 +2148,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-10CK",
@@ -2157,7 +2157,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12T",
@@ -2166,7 +2166,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12TX",
@@ -2175,7 +2175,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12F",
@@ -2184,7 +2184,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12Q",
@@ -2193,7 +2193,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12K",
@@ -2202,7 +2202,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-12CK",
@@ -2211,7 +2211,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14T",
@@ -2220,7 +2220,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14TX",
@@ -2229,7 +2229,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14F",
@@ -2238,7 +2238,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14Q",
@@ -2247,7 +2247,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14K",
@@ -2256,7 +2256,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-BA-14CK",
@@ -2265,7 +2265,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5T",
@@ -2274,7 +2274,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5TX",
@@ -2283,7 +2283,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5F",
@@ -2292,7 +2292,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5Q",
@@ -2301,7 +2301,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5K",
@@ -2310,7 +2310,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-5CK",
@@ -2319,7 +2319,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6T",
@@ -2328,7 +2328,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6TX",
@@ -2337,7 +2337,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6F",
@@ -2346,7 +2346,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6Q",
@@ -2355,7 +2355,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6K",
@@ -2364,7 +2364,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-6CK",
@@ -2373,7 +2373,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8T",
@@ -2382,7 +2382,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8TX",
@@ -2391,7 +2391,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8F",
@@ -2400,7 +2400,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8Q",
@@ -2409,7 +2409,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8K",
@@ -2418,7 +2418,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-8CK",
@@ -2427,7 +2427,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10T",
@@ -2436,7 +2436,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10TX",
@@ -2445,7 +2445,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10F",
@@ -2454,7 +2454,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10Q",
@@ -2463,7 +2463,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10K",
@@ -2472,7 +2472,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-10CK",
@@ -2481,7 +2481,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12T",
@@ -2490,7 +2490,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12TX",
@@ -2499,7 +2499,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12F",
@@ -2508,7 +2508,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12Q",
@@ -2517,7 +2517,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12K",
@@ -2526,7 +2526,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-12CK",
@@ -2535,7 +2535,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14T",
@@ -2544,7 +2544,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14TX",
@@ -2553,7 +2553,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14F",
@@ -2562,7 +2562,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14Q",
@@ -2571,7 +2571,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14K",
@@ -2580,7 +2580,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-ME-GT-14CK",
@@ -2589,7 +2589,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BN-6T",
@@ -2598,7 +2598,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BN-8T",
@@ -2616,7 +2616,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BN-8Q",
@@ -2625,7 +2625,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BA-10T",
@@ -2634,7 +2634,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BA-10F",
@@ -2643,7 +2643,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BA-10Q",
@@ -2661,7 +2661,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BA-12T",
@@ -2670,7 +2670,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-BA-12F",
@@ -2697,7 +2697,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10T",
@@ -2706,7 +2706,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10TXL",
@@ -2715,7 +2715,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10F",
@@ -2724,7 +2724,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10Q",
@@ -2733,7 +2733,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10K",
@@ -2742,7 +2742,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-10CK",
@@ -2751,7 +2751,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12T",
@@ -2760,7 +2760,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12TXL",
@@ -2769,7 +2769,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12F",
@@ -2778,7 +2778,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12Q",
@@ -2787,7 +2787,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12K",
@@ -2796,7 +2796,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-12CK",
@@ -2805,7 +2805,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14T",
@@ -2814,7 +2814,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14TXL",
@@ -2823,7 +2823,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14F",
@@ -2832,7 +2832,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14Q",
@@ -2841,7 +2841,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14K",
@@ -2850,7 +2850,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "MAT-HY-PL-14CK",
@@ -2859,7 +2859,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13ST-SS",
@@ -2868,7 +2868,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13ST-BK",
@@ -2877,7 +2877,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13ST-WH",
@@ -2886,7 +2886,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-16ST-SS",
@@ -2895,7 +2895,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-16ST-BK",
@@ -2904,7 +2904,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-16ST-WH",
@@ -2913,7 +2913,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13SP-BK",
@@ -2922,7 +2922,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13SP-BR",
@@ -2931,7 +2931,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-SN-13SP-WH",
@@ -2940,7 +2940,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-13ST-SS",
@@ -2949,7 +2949,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-13ST-BK",
@@ -2958,7 +2958,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-13ST-WH",
@@ -2967,7 +2967,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-13ST-BR",
@@ -2976,7 +2976,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-13SP-BK",
@@ -2985,7 +2985,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-1P6ST-BK",
@@ -2994,7 +2994,7 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   },
   {
     "SKU": "TB-PD-1P6ST-WH",
@@ -3003,6 +3003,6 @@
     "GA": "TRUE",
     "TX": "TRUE",
     "CA": "TRUE",
-    "NJ": "TRUE"
+    "NJ": "FALSE"
   }
 ]
