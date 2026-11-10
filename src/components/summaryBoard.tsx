@@ -9,6 +9,7 @@ import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 import type { FilterState } from "@/components/sidebarFilters";
 import type { ForecastRow } from "@/app/api/forecast/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
+import { useLang } from "@/lib/i18n";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -30,6 +31,7 @@ export default function SummaryBoard({
     const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
     const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
     const [loading, setLoading] = useState(true);
+    const { t } = useLang();
 
     useEffect(() => {
         fetch("/api/salessummary")
@@ -115,14 +117,14 @@ export default function SummaryBoard({
     if (loading) {
         return (
             <div className="w-full px-2 py-4 text-gray-400">
-                요약 데이터 불러오는 중...
+                {t("요약 데이터 불러오는 중...", "Loading summary...")}
             </div>
         );
     }
 
     const summary = activeTab === "po" ? poSummary : shipSummary;
-    const needLabel = activeTab === "po" ? "발주 필요 SKU" : "선적 필요 SKU";
-    const qtyLabel = activeTab === "po" ? "총 발주 수량" : "총 선적 수량";
+    const needLabel = activeTab === "po" ? t("발주 필요 SKU", "SKUs Needing Purchase Order") : t("선적 필요 SKU", "SKUs Needing Shipping Plan");
+    const qtyLabel = activeTab === "po" ? t("총 발주 수량", "Total Purchase Order Qty") : t("총 선적 수량", "Total Shipping Plan Qty");
 
     return (
         <div className="w-full px-2 py-4">
@@ -136,8 +138,8 @@ export default function SummaryBoard({
                     <span className="text-4xl">{summary.totalQty.toLocaleString()}EA</span>
                 </div>
                 <div className="flex flex-col items-start flex-1">
-                    <span>정상 SKU수</span>
-                    <span className="text-4xl">{summary.healthyCount.toLocaleString()}개</span>
+                    <span>{t("정상 SKU수", "Healthy SKUs")}</span>
+                    <span className="text-4xl">{summary.healthyCount.toLocaleString()}{t("개", "")}</span>
                 </div>
             </div>
         </div>

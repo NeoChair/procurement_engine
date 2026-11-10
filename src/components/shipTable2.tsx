@@ -9,6 +9,7 @@ import { computeShipTables, WH_GROUPS, type Ship2Row, type ForecastMap, type Tre
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 import { isWhOn } from "@/lib/calc/skuRules";
+import { useLang } from "@/lib/i18n";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
@@ -62,6 +63,8 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
     const lt = WH_GROUPS[r.wh].lt;
     const avail = (r.oh ?? 0) + (r.it ?? 0) + (r.shipPlan ?? 0);
     const need28 = r.need28d ?? 0;
+    // MAIN_SKU에서 이 창고가 FALSE면 2~5주차 계산값도 0(사람이 직접 입력한 값은 그대로 존중).
+    const whOn = isWhOn(r.sku, r.wh);
     const computedBase: Record<WeekField, number> = {
         shipQty: r.shipQty ?? 0, week2: r.week2 ?? 0, week3: r.week3 ?? 0, week4: r.week4 ?? 0, week5: r.week5 ?? 0,
     };
@@ -78,7 +81,7 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
             computed = computedBase.shipQty;
         } else {
             const projectedThisWeek = prevProjected + prevShip - daily * 7;
-            computed = Math.round(Math.min(Math.max(0, need28 - projectedThisWeek), Math.max(0, need28)));
+            computed = whOn ? Math.round(Math.min(Math.max(0, need28 - projectedThisWeek), Math.max(0, need28))) : 0;
             prevProjected = Math.max(0, projectedThisWeek);
             proj.push(prevProjected);
         }
@@ -114,6 +117,7 @@ function buildShip2Columns(
     logicMode: FilterState["logicMode"],
     overrides: Record<string, RowOverride>,
     onEdit: (key: string, field: WeekField, value: number | null) => void,
+    t: (ko: string, en: string) => string,
 ): DataTableColumn<Ship2Row>[] {
     function weekColumn(field: WeekField, label: string): DataTableColumn<Ship2Row> {
         return {
@@ -135,58 +139,58 @@ function buildShip2Columns(
 
     const columns: DataTableColumn<Ship2Row>[] = [
         { key: "SKU",      label: "SKU",              align: "left",  getValue: r => r.sku },
-        { key: "FACTORY",  label: "제작공장",          align: "left",  getValue: r => r.factory },
-        { key: "WH",       label: "창고",              align: "left",  getValue: r => r.wh },
-        { key: "ACTUAL_RATIO", label: "실출고 비율", align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
-        { key: "OH",       label: "현재고",            align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
-        { key: "IT",       label: "이동중재고",         align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
-        { key: "SP",       label: "생산계획수량",       align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
-        { key: "DAILY",    label: "1일치 예상출고량",   align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => nd(r.manualDaily ?? r.daily) },
-        { key: "NEED28",   label: "28일치 예상출고량", align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
-        { ...weekColumn("shipQty", "선적량"), key: "SHIP_QTY" },
+        { key: "FACTORY",  label: t("제작공장", "Factory"),align: "left",  getValue: r => r.factory },
+        { key: "WH",       label: t("창고", "Warehouse"),align: "left",  getValue: r => r.wh },
+        { key: "ACTUAL_RATIO", label: t("실출고 비율", "Actual Outbound Ratio"), align: "right", getValue: r => r.actualRatio ?? 0, render: r => pct(r.actualRatio) },
+        { key: "OH",       label: t("현재고", "On-Hand"),align: "right", getValue: r => r.oh ?? 0,        render: r => n(r.oh) },
+        { key: "IT",       label: t("이동중재고", "In-Transit"),align: "right", getValue: r => r.it ?? 0,        render: r => n(r.it) },
+        { key: "SP",       label: t("생산계획수량", "Stuffing Plan"),align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
+        { key: "DAILY",    label: t("1일치 예상출고량", "Daily Forecast Outbound"),align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => nd(r.manualDaily ?? r.daily) },
+        { key: "NEED28",   label: t("28일치 예상출고량", "28-Day Forecast Outbound"), align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
+        { ...weekColumn("shipQty", t("선적량", "Shipping Plan Qty")), key: "SHIP_QTY" },
         // -- 아래 4개는 xlsx 다운로드에서 2~5주차 선적량을 살아있는 수식으로 재현하기 위한 도움 컬럼(화면엔 안 보임).
         // 숨김 컬럼끼리 나란히 붙으면 ExcelJS 저장 버그로 뒤엣것의 숨김이 풀리므로, 항상 보이는 week 컬럼을 사이에 둔다. --
         {
-            key: "INIT_PROJ", label: "초기 예상재고", hiddenInView: true,
+            key: "INIT_PROJ", label: t("초기 예상재고", "Initial Projected Stock"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[0],
             getFormula: (_r, row) => `=MAX(0,(E${row}+F${row}+G${row})-H${row}*(${ltFormulaExpr(row)}))`,
         },
         {
-            ...weekColumn("week2", "선적량 2주"), key: "WEEK2",
-            getFormula: (r, row) => computeEffective(r, overrides[r.key]).overridden.week2
+            ...weekColumn("week2", t("선적량 2주", "Shipping Plan Qty Week 2")), key: "WEEK2",
+            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week2 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(K${row}+J${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
-            key: "PROJ_W2", label: "2주차 이후 예상재고", hiddenInView: true,
+            key: "PROJ_W2", label: t("2주차 이후 예상재고", "Projected Stock after Week 2"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[1],
             getFormula: (_r, row) => `=MAX(0,K${row}+J${row}-H${row}*7)`,
         },
         {
-            ...weekColumn("week3", "선적량 3주"), key: "WEEK3",
-            getFormula: (r, row) => computeEffective(r, overrides[r.key]).overridden.week3
+            ...weekColumn("week3", t("선적량 3주", "Shipping Plan Qty Week 3")), key: "WEEK3",
+            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week3 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(M${row}+L${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
-            key: "PROJ_W3", label: "3주차 이후 예상재고", hiddenInView: true,
+            key: "PROJ_W3", label: t("3주차 이후 예상재고", "Projected Stock after Week 3"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[2],
             getFormula: (_r, row) => `=MAX(0,M${row}+L${row}-H${row}*7)`,
         },
         {
-            ...weekColumn("week4", "선적량 4주"), key: "WEEK4",
-            getFormula: (r, row) => computeEffective(r, overrides[r.key]).overridden.week4
+            ...weekColumn("week4", t("선적량 4주", "Shipping Plan Qty Week 4")), key: "WEEK4",
+            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week4 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(O${row}+N${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
-            key: "PROJ_W4", label: "4주차 이후 예상재고", hiddenInView: true,
+            key: "PROJ_W4", label: t("4주차 이후 예상재고", "Projected Stock after Week 4"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[3],
             getFormula: (_r, row) => `=MAX(0,O${row}+N${row}-H${row}*7)`,
         },
         {
-            ...weekColumn("week5", "선적량 5주"), key: "WEEK5",
-            getFormula: (r, row) => computeEffective(r, overrides[r.key]).overridden.week5
+            ...weekColumn("week5", t("선적량 5주", "Shipping Plan Qty Week 5")), key: "WEEK5",
+            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week5 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(Q${row}+P${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
@@ -200,10 +204,16 @@ function buildShip2Columns(
             exportFill: r => r.dsiStatus == null ? undefined : DSI_STATUS_FILL[r.dsiStatus],
             exportFontColor: r => r.dsiStatus == null ? undefined : DSI_STATUS_FONT[r.dsiStatus],
         },
+        // 맨 끝에 둔다 — 중간에 끼우면 xlsx 수식의 컬럼 글자(E,F,G…)가 밀려서 깨진다.
+        {
+            key: "WH_ON", label: t("창고 사용", "WH Active"), align: "left",
+            getValue: r => isWhOn(r.sku, r.wh) ? "ON" : "OFF",
+            cellClassName: r => isWhOn(r.sku, r.wh) ? "bg-inherit" : "!bg-gray-100 text-gray-500 font-semibold",
+        },
     ];
 
     if (logicMode === "manual" || logicMode === "default_manual") {
-        columns.push({ key: "MANUAL_FLAG", label: "비고", align: "left", getValue: r => r.manualDaily != null ? "매뉴얼" : "", render: r => r.manualDaily != null ? "ℹ️ 매뉴얼" : "" });
+        columns.push({ key: "MANUAL_FLAG", label: t("비고", "Note"), align: "left", getValue: r => r.manualDaily != null ? t("매뉴얼", "Manual") : "", render: r => r.manualDaily != null ? `ℹ️ ${t("매뉴얼", "Manual")}` : "" });
     }
 
     return columns;
@@ -224,6 +234,7 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 }
 
 export default function ShipTable2({ filters }: { filters: FilterState }) {
+    const { t } = useLang();
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
     const [forecastMap, setForecastMap] = useState<ForecastMap>({});
@@ -274,7 +285,8 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
         const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh);
-        let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE" && isWhOn(row.sku, row.wh));
+        // 창고별 FALSE 행도 숨기지 않고 선적량 0으로 보여준다(계산은 shipCalc에서 0 처리).
+        let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
@@ -283,12 +295,12 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     }, [rows, filters, shipRatio84d, forecastMap, trendMediansByWh]);
 
     const columns = useMemo(
-        () => buildShip2Columns(filters.logicMode, overrides, handleEdit),
-        [filters.logicMode, overrides],
+        () => buildShip2Columns(filters.logicMode, overrides, handleEdit, t),
+        [filters.logicMode, overrides, t],
     );
 
-    if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
-    if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
+    if (loading) return <div className="px-2 py-4 text-gray-500">{t("불러오는 중...", "Loading...")}</div>;
+    if (error) return <div className="px-2 py-4 text-red-500">{t("오류", "Error")}: {error}</div>;
 
     return (
         <div className="w-full px-2 py-4">
@@ -296,7 +308,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                 columns={columns}
                 rows={displayRows}
                 rowKey={r => r.key}
-                fileName="선적_Table2"
+                fileName={t("선적_Table2", "ShippingPlan_Table2")}
                 defaultSort={(a, b) => {
                     if ((a.shipQty > 0) !== (b.shipQty > 0)) return a.shipQty > 0 ? -1 : 1;
                     return b.shipQty - a.shipQty;
