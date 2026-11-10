@@ -208,7 +208,8 @@ export default function DataTable<T>({
             )}
             <div
                 className="hover-scroll w-full overflow-auto rounded-md border border-gray-300 bg-white"
-                style={{ height: `calc(${headerHeight}px + ${visibleRows} * ${rowHeight}px)` }}
+                // 컬럼명이 길면 머리글이 두세 줄로 접히므로, 행 수가 줄어 보이지 않게 머리글 높이를 넉넉히(2배) 잡는다.
+                style={{ height: `calc(${headerHeight * 2}px + ${visibleRows} * ${rowHeight}px)` }}
             >
                 <table
                     ref={tableRef}
@@ -229,7 +230,7 @@ export default function DataTable<T>({
                                     <th
                                         key={col.key}
                                         onClick={() => handleSort(col.key)}
-                                        className="sticky top-0 z-10 px-3 font-normal whitespace-nowrap cursor-pointer select-none text-gray-400 bg-[#f8f9fb] hover:bg-gray-200 hover:text-gray-600 text-left py-2 relative overflow-hidden"
+                                        className="sticky top-0 z-10 px-3 font-normal whitespace-normal break-words leading-tight cursor-pointer select-none text-gray-400 bg-[#f8f9fb] hover:bg-gray-200 hover:text-gray-600 text-left py-2 relative overflow-hidden"
                                         style={{
                                             boxShadow: "inset 0 -1px 0 0 #d1d5db, inset -1px 0 0 0 #d1d5db",
                                             verticalAlign: "middle",

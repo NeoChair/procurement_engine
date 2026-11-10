@@ -27,12 +27,12 @@ export type RebalanceWhInput = {
     baseShip: number;
 };
 
-function largestRemainderInt(raw: Record<RatioWh, number>, targetTotal: number): Record<RatioWh, number> {
+function largestRemainderInt(raw: Record<RatioWh, number>, targetTotal: number, whs: RatioWh[] = RATIO_WAREHOUSES): Record<RatioWh, number> {
     const floors = {} as Record<RatioWh, number>;
-    for (const wh of RATIO_WAREHOUSES) floors[wh] = Math.floor(Math.max(0, raw[wh]));
-    let remainder = targetTotal - RATIO_WAREHOUSES.reduce((s, wh) => s + floors[wh], 0);
+    for (const wh of RATIO_WAREHOUSES) floors[wh] = whs.includes(wh) ? Math.floor(Math.max(0, raw[wh])) : 0;
+    let remainder = targetTotal - whs.reduce((s, wh) => s + floors[wh], 0);
 
-    const fracs = RATIO_WAREHOUSES
+    const fracs = whs
         .map((wh) => [wh, Math.max(0, raw[wh]) - floors[wh]] as [RatioWh, number])
         .sort((a, b) => b[1] - a[1]);
 
@@ -85,13 +85,15 @@ function resolveBaseRatio(mode: Week1AllocMode, actualRatio?: ActualRatio | null
     return resolved;
 }
 
-/** 단일 SKU에 대해 CA/TX/NJ/GA 4개 창고의 선적량을 재배분한다. WF는 대상 아님(호출부에서 별도 유지). */
+/** 단일 SKU에 대해 CA/TX/NJ/GA 4개 창고의 선적량을 재배분한다. WF는 대상 아님(호출부에서 별도 유지).
+ *  rows에 없는 창고(MAIN_SKU에서 OFF된 창고 등)는 분배 대상에서 빠지고 선적량 0 — 비율은 남은 창고끼리 다시 맞춘다. */
 export function rebalanceSku(
     rows: RebalanceWhInput[],
     mode: Week1AllocMode,
     actualRatio?: ActualRatio | null,
 ): RebalanceResult {
     const byWh = new Map(rows.map(r => [r.wh, r]));
+    const activeWhs = RATIO_WAREHOUSES.filter(wh => byWh.has(wh));
     const result = {} as Record<RatioWh, number>;
     const zeroFlag = {} as Record<RatioWh, boolean>;
     for (const wh of RATIO_WAREHOUSES) {
@@ -102,7 +104,15 @@ export function rebalanceSku(
     // target_ratio와 actual_ratio는 "어떤 비율을 기준으로 삼을지"만 다르고 이후 로직은 동일하다.
     // actual_ratio인데 해당 SKU의 84일 실제 출고 데이터가 없으면 — 84일간 실제로 안 나간 창고 조합이니
     // 이번 주 선적량도 0으로 본다 (기준선적량으로 대충 채우지 않음).
-    const baseRatio = resolveBaseRatio(mode, actualRatio);
+    let baseRatio = resolveBaseRatio(mode, actualRatio);
+    if (baseRatio !== null && activeWhs.length < RATIO_WAREHOUSES.length) {
+        // OFF 창고 몫은 0으로. 실출고가 OFF 창고에서만 있었으면(남은 창고 비율 합=0) Target Ratio로 대신 나눈다.
+        const masked = {} as Record<RatioWh, number>;
+        for (const wh of RATIO_WAREHOUSES) masked[wh] = activeWhs.includes(wh) ? baseRatio[wh] : 0;
+        const activeSum = activeWhs.reduce((s, wh) => s + masked[wh], 0);
+        if (activeSum <= 0) for (const wh of activeWhs) masked[wh] = TARGET_RATIO[wh];
+        baseRatio = masked;
+    }
     if (baseRatio === null) {
         const zeroResult = {} as Record<RatioWh, number>;
         for (const wh of RATIO_WAREHOUSES) zeroResult[wh] = 0;
@@ -158,6 +168,6 @@ export function rebalanceSku(
     }
 
     const targetIntTotal = Math.round(totalBaseShip);
-    const shipQty = largestRemainderInt(rawAlloc, targetIntTotal);
+    const shipQty = largestRemainderInt(rawAlloc, targetIntTotal, activeWhs);
     return { shipQty, zeroFlag, gapFlag: true, noDataFlag: false };
 }

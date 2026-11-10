@@ -4,6 +4,9 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import ExcelJS from "exceljs";
 import type { IntransitPoRow, PlanPoRow } from "@/app/api/pomanage/route";
 import type { FilterState } from "@/components/sidebarFilters";
+import { useLang } from "@/lib/i18n";
+
+type T = (ko: string, en: string) => string;
 
 type Source = "intransit" | "plan";
 
@@ -177,7 +180,12 @@ function toMasterRows(details: PoDetailRow[]): PoMasterRow[] {
     return masters.sort((a, b) => etdSortKey(a.etdMin).localeCompare(etdSortKey(b.etdMin)));
 }
 
+function sourceLabel(source: Source, t: T): string {
+    return source === "intransit" ? t("이동중재고", "In-Transit") : t("생산계획재고", "Stuffing Plan");
+}
+
 function SourceBadge({ source }: { source: Source }) {
+    const { t } = useLang();
     const isIntransit = source === "intransit";
     return (
         <span
@@ -185,25 +193,29 @@ function SourceBadge({ source }: { source: Source }) {
                 isIntransit ? "bg-[#1C83E11A] text-[#004280]" : "bg-[#ff4b4b1A] text-[#c0392b]"
             }`}
         >
-            {isIntransit ? "이동중재고" : "생산계획재고"}
+            {sourceLabel(source, t)}
         </span>
     );
 }
 
 type MasterSortKey = "poNo" | "factory" | "warehouse" | "source" | "totalQty" | "etd" | "eta";
 
-const MASTER_COLUMNS: { label: string; key: MasterSortKey; align: "left" | "center"; getValue: (r: PoMasterRow) => string | number }[] = [
-    { label: "PO 번호", key: "poNo", align: "left", getValue: (r) => r.poNo },
-    { label: "공장", key: "factory", align: "center", getValue: (r) => r.factories.join(", ") },
-    { label: "창고", key: "warehouse", align: "center", getValue: (r) => r.warehouses.join(", ") },
+type MasterColumn = { label: string; key: MasterSortKey; align: "left" | "center"; getValue: (r: PoMasterRow) => string | number };
+
+function buildMasterColumns(t: T): MasterColumn[] {
+    return [
+    { label: t("PO 번호", "PO Number"), key: "poNo", align: "left", getValue: (r) => r.poNo },
+    { label: t("공장", "Factory"), key: "factory", align: "center", getValue: (r) => r.factories.join(", ") },
+    { label: t("창고", "Warehouse"), key: "warehouse", align: "center", getValue: (r) => r.warehouses.join(", ") },
     {
-        label: "구분", key: "source", align: "center",
-        getValue: (r) => r.sources.map((s) => (s === "intransit" ? "이동중재고" : "생산계획재고")).join(", "),
+        label: t("구분", "Type"), key: "source", align: "center",
+        getValue: (r) => r.sources.map((s) => sourceLabel(s, t)).join(", "),
     },
-    { label: "총 수량", key: "totalQty", align: "center", getValue: (r) => r.totalQty },
+    { label: t("총 수량", "Total Qty"), key: "totalQty", align: "center", getValue: (r) => r.totalQty },
     { label: "ETD", key: "etd", align: "center", getValue: (r) => etdSortKey(r.etdMin) },
     { label: "ETA", key: "eta", align: "center", getValue: (r) => etdSortKey(r.etaMax) },
-];
+    ];
+}
 
 function ChevronIcon({ open }: { open: boolean }) {
     return (
@@ -217,6 +229,8 @@ function ChevronIcon({ open }: { open: boolean }) {
 }
 
 export default function PoManageTable({ filters }: { filters: FilterState }) {
+    const { t } = useLang();
+    const MASTER_COLUMNS = useMemo(() => buildMasterColumns(t), [t]);
     const [intransit, setIntransit] = useState<IntransitPoRow[]>([]);
     const [plan, setPlan] = useState<PlanPoRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -229,7 +243,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
         fetch("/api/pomanage")
             .then((r) => r.json())
             .then((json) => {
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
+                if (!json.success) throw new Error(json.error ?? t("데이터 조회 실패", "Failed to load data"));
                 setIntransit(json.intransit as IntransitPoRow[]);
                 setPlan(json.plan as PlanPoRow[]);
             })
@@ -280,7 +294,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
             if (typeof va === "number" && typeof vb === "number") return (va - vb) * dir;
             return String(va).localeCompare(String(vb)) * dir;
         });
-    }, [masterRows, sort]);
+    }, [masterRows, sort, MASTER_COLUMNS]);
 
     function handleSort(key: MasterSortKey) {
         setSort((prev) => {
@@ -303,7 +317,10 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet("Sheet1");
 
-        const header = ["PO 번호", "구분", "SKU", "창고", "수량", "ETD", "ETA", "컨테이너", "공급공장", "주차"];
+        const header = [
+            t("PO 번호", "PO Number"), t("구분", "Type"), "SKU", t("창고", "Warehouse"), t("수량", "Qty"),
+            "ETD", "ETA", t("컨테이너", "Container"), t("공급공장", "Supplier Factory"), t("주차", "Week"),
+        ];
         sheet.addRow(header);
         sheet.getRow(1).font = { bold: true };
 
@@ -311,7 +328,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
             for (const d of row.details) {
                 sheet.addRow([
                     row.poNo,
-                    d.source === "intransit" ? "이동중재고" : "생산계획재고",
+                    sourceLabel(d.source, t),
                     d.sku,
                     whLabel(d.wrhs),
                     d.qty,
@@ -338,13 +355,13 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
 
         const a = document.createElement("a");
         a.href = url;
-        a.download = `PO_목록_${timestamp}.xlsx`;
+        a.download = `${t("PO_목록", "PO_List")}_${timestamp}.xlsx`;
         a.click();
         URL.revokeObjectURL(url);
     }
 
-    if (loading) return <div className="px-2 py-4 text-gray-500">불러오는 중...</div>;
-    if (error) return <div className="px-2 py-4 text-red-500">오류: {error}</div>;
+    if (loading) return <div className="px-2 py-4 text-gray-500">{t("불러오는 중...", "Loading...")}</div>;
+    if (error) return <div className="px-2 py-4 text-red-500">{t("오류", "Error")}: {error}</div>;
 
     return (
         <div className="w-full px-2 py-4">
@@ -352,10 +369,10 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
                 <input
                     value={poQuery}
                     onChange={(e) => setPoQuery(e.target.value)}
-                    placeholder="PO 번호 검색 (예: PO-MD-WF-26-39)"
+                    placeholder={t("PO 번호 검색 (예: PO-MD-WF-26-39)", "Search PO Number (e.g. PO-MD-WF-26-39)")}
                     className="h-10 w-80 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-[#ff4b4b]"
                 />
-                <span className="text-sm text-gray-400">총 {masterRows.length.toLocaleString()}건 PO</span>
+                <span className="text-sm text-gray-400">{t(`총 ${masterRows.length.toLocaleString()}건 PO`, `${masterRows.length.toLocaleString()} POs total`)}</span>
                 <button
                     onClick={handleDownload}
                     className="ml-auto h-10 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-600 hover:border-[#ff4b4b] hover:text-[#ff4b4b] active:bg-[#ff4b4b] active:text-white"
@@ -393,7 +410,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
                         {masterRows.length === 0 && (
                             <tr>
                                 <td colSpan={8} className="px-3 py-8 text-center text-gray-400">
-                                    표시할 PO가 없습니다.
+                                    {t("표시할 PO가 없습니다.", "No POs to display.")}
                                 </td>
                             </tr>
                         )}
@@ -447,7 +464,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
                                                         </colgroup>
                                                         <thead>
                                                             <tr>
-                                                                {["SKU", "창고", "수량", "컨테이너"].map((label) => (
+                                                                {["SKU", t("창고", "Warehouse"), t("수량", "Qty"), t("컨테이너", "Container")].map((label) => (
                                                                     <th
                                                                         key={label}
                                                                         className={`whitespace-nowrap bg-[#fafafa] px-3 py-2 font-normal text-gray-500 ${

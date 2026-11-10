@@ -5,6 +5,7 @@ import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
 import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
 import { PO_HORIZON_DAYS, PO_HORIZON_DAYS_SHORT } from "@/lib/calc/poCalc";
+import { useLang, type Lang } from "@/lib/i18n";
 
 export type FilterState = {
     skuQuery: string;
@@ -221,7 +222,7 @@ function MultiSelect({
 }
 
 const LANGUAGE_OPTIONS: Option[] = [
-    { value: "kr", label: "한국어" },
+    { value: "ko", label: "한국어" },
     { value: "en", label: "English" },
 ];
 
@@ -252,7 +253,8 @@ const LOGIC_MODE_OPTIONS: Option[] = [
     { value: "manual", label: "Manual (수기 입력값)" },
 ];
 
-function formatYm(ym: string): string {
+function formatYm(ym: string, lang: Lang): string {
+    if (lang === "en") return `${ym.slice(0, 4)}-${ym.slice(4, 6)}`;
     return `${ym.slice(0, 4)}년 ${Number(ym.slice(4, 6))}월`;
 }
 
@@ -271,7 +273,7 @@ export default function SidebarFilter({
     filters: FilterState;
     onFilterChange: (f: FilterState) => void;
 }) {
-    const [language, setLanguage] = useState("kr");
+    const { lang, setLang, t } = useLang();
     const [width, setWidth] = useState(DEFAULT_WIDTH);
     const [collapsed, setCollapsed] = useState(false);
     const [availableYms, setAvailableYms] = useState<Set<string>>(new Set());
@@ -323,7 +325,7 @@ export default function SidebarFilter({
                 <button
                     type="button"
                     onClick={() => setCollapsed(false)}
-                    aria-label="사이드바 펼치기"
+                    aria-label={t("사이드바 펼치기", "Expand sidebar")}
                     className="flex h-10 w-10 items-center justify-center rounded-md text-gray-500 hover:bg-gray-200 hover:text-gray-800"
                 >
                     <SidebarArrowIcon className="h-7 w-7" />
@@ -340,7 +342,7 @@ export default function SidebarFilter({
                 <button
                     type="button"
                     onClick={() => setCollapsed(true)}
-                    aria-label="사이드바 접기"
+                    aria-label={t("사이드바 접기", "Collapse sidebar")}
                     className="flex h-10 w-10 items-center justify-center rounded-md text-gray-500 font-medium hover:bg-gray-200 hover:text-gray-800"
                 >
                     ✕
@@ -355,8 +357,8 @@ export default function SidebarFilter({
                     <label className="text-sm font-medium text-gray-700">🌐 Language</label>
                     <CustomSelect
                         options={LANGUAGE_OPTIONS}
-                        value={language}
-                        onChange={setLanguage}
+                        value={lang}
+                        onChange={v => setLang(v === "en" ? "en" : "ko")}
                         bordered={false}
                     />
                 </div>
@@ -364,41 +366,43 @@ export default function SidebarFilter({
                 <hr className="border-gray-300" />
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-md font-medium text-gray-700">🔎 SKU 검색</label>
+                    <label className="text-md font-medium text-gray-700">🔎 {t("SKU 검색", "SKU Search")}</label>
                     <input
                         value={filters.skuQuery}
                         onChange={e => update({ skuQuery: e.target.value })}
-                        placeholder="SKU 키워드 입력 (예: CHA)"
+                        placeholder={t("SKU 키워드 입력 (예: CHA)", "Enter SKU keyword (e.g. CHA)")}
                         className="h-10 w-full min-w-[245px] rounded-md bg-white px-3 text-base text-gray-800 focus:outline-none focus:ring-1 focus:ring-[#ff4b4b]"
                     />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-md font-medium text-gray-700">🏭 공장 필터</label>
+                    <label className="text-md font-medium text-gray-700">🏭 {t("공장 필터", "Factory Filter")}</label>
                     <MultiSelect
                         options={FACTORY_OPTIONS}
                         values={filters.factory}
                         onChange={v => update({ factory: v })}
-                        placeholder="공장 선택..."
+                        placeholder={t("공장 선택...", "Select factory...")}
                     />
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-md font-medium text-gray-700">🏬 창고 필터</label>
+                    <label className="text-md font-medium text-gray-700">🏬 {t("창고 필터", "Warehouse Filter")}</label>
                     <MultiSelect
                         options={WAREHOUSE_OPTIONS}
                         values={filters.warehouse}
                         onChange={v => update({ warehouse: v })}
-                        placeholder="창고 선택..."
+                        placeholder={t("창고 선택...", "Select warehouse...")}
                     />
                 </div>
                 {/* 선적비율 재배분 */}
                 <hr className="border-gray-300" />
                 
-                <div className="flex flex-col gap-6 mb-4">
-                    <label className="text-xl font-bold text-gray-700">🎯 선적 비율 재배분</label>
-                    <label className="flex items-center cursor-pointer">
-                        <div className="relative">
+                {/* 제목 오른쪽 끝에 토글을 붙여 제목/토글 문구 중복을 없앤다. 한국어는 원래 글자 크기 그대로,
+                    영어는 문구가 길어 줄이 깨지지 않도록 한 단계 작게. 제목이 두 줄로 접혀도 토글은 오른쪽에 고정된다. */}
+                <div className="flex flex-col gap-3 mb-4">
+                    <label className="flex items-center justify-between gap-3 cursor-pointer">
+                        <span className={lang === "en" ? "text-lg font-bold leading-snug text-gray-700" : "text-xl font-bold text-gray-700"}>🎯 {t("선적 비율 재배분", "Shipping Plan Ratio Rebalancing")}</span>
+                        <div className="relative flex-shrink-0">
                             <input
                                 type="checkbox"
                                 className="sr-only peer"
@@ -408,27 +412,30 @@ export default function SidebarFilter({
                             <div className="w-11 h-6 bg-gray-300 rounded-full peer-checked:bg-[#ff4b4b] transition-colors" />
                             <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow peer-checked:translate-x-5 transition-transform" />
                         </div>
-                        <span className="ml-2 text-lg text-gray-700">🎯 선적 비율 재배분</span>
                     </label>
 
                     {filters.rebalance ? (
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm font-bold text-[#ff4b4b]">⚡ 재배분 활성화됨</span>
+                            <span className="text-sm font-bold text-[#ff4b4b]">⚡ {t("재배분 활성화됨", "Rebalancing ON")}</span>
+                            {/* 숨김 처리(요청): 필요하면 주석 해제
                             <span className="text-sm text-gray-400">📌 Target: CA 20% · TX 20% · NJ 30% · GA 30%</span>
-                            <span className="text-sm text-gray-400">📌 ±0% 범위 밖 SKU → 자동 재배분</span>
-                            <span className="text-sm text-gray-400">📌 기준선적량(28일Need)이 base, 재배분은 보정 레이어</span>
+                            <span className="text-sm text-gray-400">📌 {t("±0% 범위 밖 SKU → 자동 재배분", "SKUs outside ±0% → auto-rebalanced")}</span>
+                            <span className="text-sm text-gray-400">📌 {t("기준선적량(28일Need)이 base, 재배분은 보정 레이어", "Base Shipping Plan Qty (28-day Need) is the base; rebalancing is an adjustment layer")}</span>
+                            */}
                         </div>
                     ) : (
                         <div className="flex flex-col gap-1">
-                            <span className="text-sm font-bold text-gray-500">📌 Rebalance OFF (모니터링 전용)</span>
-                            <span className="text-sm text-gray-400">📌 Target Ratio 비교표는 표시되지만 선적량 변경 없음</span>
-                            <span className="text-sm text-gray-400">📌 기준선적량 공식(28일 Need)으로만 선적량 계산</span>
+                            <span className="text-sm font-bold text-gray-500">{t("📌 Rebalance OFF (모니터링 전용)", "⏸ Rebalancing OFF (monitoring only)")}</span>
+                            {/* 숨김 처리(요청): 필요하면 주석 해제
+                            <span className="text-sm text-gray-400">📌 {t("Target Ratio 비교표는 표시되지만 선적량 변경 없음", "Target Ratio comparison is shown, but Shipping Plan Qty is unchanged")}</span>
+                            <span className="text-sm text-gray-400">📌 {t("기준선적량 공식(28일 Need)으로만 선적량 계산", "Shipping Plan Qty is calculated by the base formula (28-day Need) only")}</span>
+                            */}
                         </div>
                     )}
 
                     {filters.rebalance && (
                         <div className="flex flex-col gap-2">
-                            <label className="text-md font-medium text-gray-700">📐 1주차 배분 방식</label>
+                            <label className="text-md font-medium text-gray-700">📐 {t("1주차 배분 방식", "Week 1 Allocation Method")}</label>
                             <div className="flex flex-col gap-1.5 rounded-md py-1">
                                 {/* 목표 고정 비율은 주석처리 
                                 
@@ -452,7 +459,7 @@ export default function SidebarFilter({
                                         onChange={() => update({ week1AllocMode: "actual_ratio" })}
                                         className="accent-[#ff4b4b] w-[15px] h-[15px]"
                                     />
-                                    <label htmlFor="week1-actual" className="text-sm text-gray-700">실 출고비율 (84일)</label>
+                                    <label htmlFor="week1-actual" className="text-sm text-gray-700">{t("실 출고비율 (84일)", "Actual Outbound Ratio (84 days)")}</label>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <input
@@ -463,7 +470,7 @@ export default function SidebarFilter({
                                         onChange={() => update({ week1AllocMode: "inventory_aware" })}
                                         className="accent-[#ff4b4b] w-[15px] h-[15px]"
                                     />
-                                    <label htmlFor="week1-inv" className="text-sm text-gray-700">현재고기반</label>
+                                    <label htmlFor="week1-inv" className="text-sm text-gray-700">{t("현재고기반", "On-Hand Based")}</label>
                                 </div>
                             </div>
                         </div>
@@ -501,22 +508,25 @@ export default function SidebarFilter({
                         const poHasData = availableYms.has(poYm);
                         const caHasData = availableYms.has(caYm);
                         const njHasData = availableYms.has(njYm);
+                        const noData = t("데이터 없음, 미적용", "No data, not applied");
                         return (
                             <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
-                                <span className="text-sm font-bold text-[#ff4b4b]">📌 기준일 선적 {formatDate(getManualReferenceDate())} / 발주 {formatDate(getManualReferenceDate(true))} 기준 적용 YM</span>
+                                <span className="text-sm font-bold text-[#ff4b4b]">📌 {lang === "en"
+                                    ? `YM applied as of Shipping Plan ${formatDate(getManualReferenceDate())} / Purchase Order ${formatDate(getManualReferenceDate(true))}`
+                                    : `기준일 선적 ${formatDate(getManualReferenceDate())} / 발주 ${formatDate(getManualReferenceDate(true))} 기준 적용 YM`}</span>
                                 <span className="text-sm text-gray-500">
-                                    📌 발주({PO_HORIZON_DAYS}일): {poHasData ? formatYm(poYm) : "데이터 없음, 미적용"}
+                                    📌 {t(`발주(${PO_HORIZON_DAYS}일)`, `Purchase Order (${PO_HORIZON_DAYS} days)`)}: {poHasData ? formatYm(poYm, lang) : noData}
                                 </span>
                                 <span className="text-sm text-gray-500">
-                                    📌 발주 TYJ·DMS({PO_HORIZON_DAYS_SHORT}일): {poShortHasData ? formatYm(poShortYm) : "데이터 없음, 미적용"}
+                                    📌 {t(`발주 TYJ·DMS(${PO_HORIZON_DAYS_SHORT}일)`, `Purchase Order TYJ·DMS (${PO_HORIZON_DAYS_SHORT} days)`)}: {poShortHasData ? formatYm(poShortYm, lang) : noData}
                                 </span>
                                 <span className="text-sm text-gray-500">
-                                    📌 선적 CA({WH_GROUPS.CA.lt}일): {caHasData ? formatYm(caYm) : "데이터 없음, 미적용"}
+                                    📌 {t(`선적 CA(${WH_GROUPS.CA.lt}일)`, `Shipping Plan CA (${WH_GROUPS.CA.lt} days)`)}: {caHasData ? formatYm(caYm, lang) : noData}
                                 </span>
                                 <span className="text-sm text-gray-500">
-                                    📌 선적 NJ/GA/TX({WH_GROUPS.NJ.lt}일): {njHasData ? formatYm(njYm) : "데이터 없음, 미적용"}
+                                    📌 {t(`선적 NJ/GA/TX(${WH_GROUPS.NJ.lt}일)`, `Shipping Plan NJ/GA/TX (${WH_GROUPS.NJ.lt} days)`)}: {njHasData ? formatYm(njYm, lang) : noData}
                                 </span>
-                                <span className="text-sm text-gray-500">📌 WF: 매뉴얼 미적용</span>
+                                <span className="text-sm text-gray-500">📌 {t("WF: 매뉴얼 미적용", "WF: manual forecast not applied")}</span>
                             </div>
                         );
                     })()}
