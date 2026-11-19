@@ -114,6 +114,8 @@ export type Ship2Row = {
     /** Manual 계산모드에서 매뉴얼 예측치 기반으로 환산한 일 예상판매량. 해당 창고/SKU에 매뉴얼 데이터가 없으면 null(daily로 폴백). */
     manualDaily: number | null;
     need28d: number;
+    /** 리드타임 동안 예상 소요량. default_manual(매뉴얼 없음)은 구간별 추세 합산, 그 외는 일판매량 × 리드타임. */
+    predPeriod: number;
     shipQty: number;
     week2: number;
     week3: number;
@@ -152,13 +154,13 @@ function floorDailyDemand(cy7: number, cy28: number, cy56: number): number {
 function rollMultiWeek(
     baseAvail: number,
     daily: number,
-    lt: number,
+    predPeriod: number,
     need28: number,
     week1Ship: number,
     capEnabled: boolean = true,
 ): { week2: number; week3: number; week4: number; week5: number } {
     const weeklyConsumption = daily * 7;
-    let prevProjected = Math.max(0, baseAvail - daily * lt);
+    let prevProjected = Math.max(0, baseAvail - predPeriod);
     let prevShip = week1Ship;
     const weeks: number[] = [];
     for (let i = 0; i < 4; i++) {
@@ -216,6 +218,8 @@ export function computeShipTables(
             const isNew = isNewProduct(r.SKU, ly7, ly28, ly56, growthFactor, logicMode);
 
             let daily: number;
+            // default_manual 모드의 리드타임 소요량(구간별 추세 합산). 다른 모드는 null → 일판매량 × lt.
+            let trendPredPeriod: number | null = null;
             if (logicMode === "default_manual") {
                 // 1일치 예상출고량 추세: 이 창고의 리드타임(lt)이 속한 30일 구간의 추세부터 캐스케이드로
                 // 아래 구간까지 시도한다 — 추세N은 [(N-1)*30, N*30)일 구간을 나타내므로 lt가 속한 구간은
@@ -227,7 +231,19 @@ export function computeShipTables(
                 for (let i = startIdx; i >= 0; i--) {
                     if (trendRatios[i] >= 1) { shipTrend = trendRatios[i]; break; }
                 }
-                daily = newProductDaily(cy7, cy28, cy56) * shipTrend;
+                const baseDaily = newProductDaily(cy7, cy28, cy56);
+                daily = baseDaily * shipTrend;
+
+                // 리드타임 소요량: 리드타임을 30일 구간으로 나눠 구간마다 그 구간 추세를 곱해서 더한다(누적 곱 아님).
+                // 예) lt=72 → 기본×추세1×30 + 기본×추세2×30 + 기본×추세3×12,
+                //     lt=92 → 기본×추세1×30 + 기본×추세2×30 + 기본×추세3×30 + 기본×추세4×2.
+                // 추세가 1 미만(하락)인 구간은 1로 본다.
+                trendPredPeriod = 0;
+                for (let i = 0; i * 30 < lt; i++) {
+                    const days = Math.min(30, lt - i * 30);
+                    const t = trendRatios[Math.min(i, trendRatios.length - 1)];
+                    trendPredPeriod += baseDaily * Math.max(1, t) * days;
+                }
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
             } else {
@@ -245,7 +261,8 @@ export function computeShipTables(
 
             const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
             const need28d = Math.round(effectiveDaily * safetyDays);
-            const predPeriod = effectiveDaily * lt;
+            // 매뉴얼 예측치를 쓰는 경우엔 기존처럼 매뉴얼 일판매량 × 리드타임.
+            const predPeriod = manualDaily == null && trendPredPeriod != null ? trendPredPeriod : effectiveDaily * lt;
 
             const oh = sumParts(r, parts, "STOCK");
             const it = sumParts(r, parts, "INTRANSIT_STOCK");
@@ -263,7 +280,7 @@ export function computeShipTables(
             // cap씌우는 부분 (Manual 포함 전체 캡 적용)
             const shipQty = whOn ? Math.round(Math.min(rawShip, Math.max(0, need28d))) : 0;
             const { week2, week3, week4, week5 } = whOn
-                ? rollMultiWeek(avail, effectiveDaily, lt, need28d, shipQty, true)
+                ? rollMultiWeek(avail, effectiveDaily, predPeriod, need28d, shipQty, true)
                 : { week2: 0, week3: 0, week4: 0, week5: 0 };
             
 
@@ -292,7 +309,7 @@ export function computeShipTables(
                 oh: Math.round(oh), it: Math.round(it), shipPlan: Math.round(shipPlan),
                 daily: Math.round(daily * 100) / 100,
                 manualDaily: manualDaily == null ? null : Math.round(manualDaily * 100) / 100,
-                need28d, shipQty,
+                need28d, predPeriod: Math.round(predPeriod), shipQty,
                 week2, week3, week4, week5,
                 rebalanceFlag: whOn ? "" : "⚫ 창고 OFF", shock, actualRatio,
                 dsiDays: dsiDays == null ? null : Math.round(dsiDays * 10) / 10,
@@ -344,9 +361,8 @@ function applyRebalance(
 
             // 재배분으로 week1(shipQty)이 바뀌었으므로, 그 값을 기준으로 2~5주차도 다시 굴린다.
             const avail = row.oh + row.it + row.shipPlan;
-            const lt = WH_GROUPS[wh].lt;
-            //const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty, false); // Cap제거
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, lt, row.need28d, row.shipQty); //기존 캡 처리하던 부분
+            //const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, row.predPeriod, row.need28d, row.shipQty, false); // Cap제거
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, row.predPeriod, row.need28d, row.shipQty); //기존 캡 처리하던 부분
             row.week2 = week2;
             row.week3 = week3;
             row.week4 = week4;
