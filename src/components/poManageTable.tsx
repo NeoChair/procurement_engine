@@ -5,6 +5,7 @@ import ExcelJS from "exceljs";
 import type { IntransitPoRow, PlanPoRow } from "@/app/api/pomanage/route";
 import type { FilterState } from "@/components/sidebarFilters";
 import { useLang } from "@/lib/i18n";
+import { poManageUrl } from "@/lib/snapshot";
 
 type T = (ko: string, en: string) => string;
 
@@ -240,7 +241,7 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
     const [sort, setSort] = useState<{ key: MasterSortKey; direction: "asc" | "desc" } | null>(null);
 
     useEffect(() => {
-        fetch("/api/pomanage")
+        fetch(poManageUrl(filters.gathDe))
             .then((r) => r.json())
             .then((json) => {
                 if (!json.success) throw new Error(json.error ?? t("데이터 조회 실패", "Failed to load data"));
@@ -249,7 +250,8 @@ export default function PoManageTable({ filters }: { filters: FilterState }) {
             })
             .catch((err) => setError(err instanceof Error ? err.message : String(err)))
             .finally(() => setLoading(false));
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filters.gathDe]);
 
     const allMasterRows = useMemo(() => toMasterRows(toDetailRows(intransit, plan)), [intransit, plan]);
 

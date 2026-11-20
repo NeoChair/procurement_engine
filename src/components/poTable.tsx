@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { salesSummaryUrl } from "@/lib/snapshot";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
@@ -90,7 +91,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await fetch("/api/salessummary");
+                const res = await fetch(salesSummaryUrl(filters.gathDe));
                 const json = await res.json();
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
                 setRows(json.data as SummaryRow[]);
@@ -102,7 +103,7 @@ export default function PoTable({ filters }: { filters: FilterState }) {
             }
         }
         fetchData();
-    }, []);
+    }, [filters.gathDe]);
 
     const displayRows = useMemo(() => {
         let result = rows.map(row => toPoRow(row, trendMedians));

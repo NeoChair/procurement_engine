@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
@@ -257,7 +258,7 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     }
 
     useEffect(() => {
-        fetch("/api/salessummary")
+        fetch(salesSummaryUrl(filters.gathDe))
             .then(r => r.json())
             .then(json => {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
@@ -278,13 +279,13 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                 }
                 setForecastMap(map);
             });
-    }, []);
+    }, [filters.gathDe]);
 
     const displayRows = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh);
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh, baseDateFromGathDe(filters.gathDe));
         // 창고별 FALSE 행도 숨기지 않고 선적량 0으로 보여준다(계산은 shipCalc에서 0 처리).
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);

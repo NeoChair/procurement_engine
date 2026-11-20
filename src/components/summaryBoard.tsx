@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { computePoCalc } from "@/lib/calc/poCalc";
-import { computeShipTables, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import type { ForecastMap, TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { computeShipSummary } from "@/lib/calc/shipSummary";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 import type { FilterState } from "@/components/sidebarFilters";
@@ -23,7 +25,7 @@ export default function SummaryBoard({
 }: {
     filters: FilterState;
     activeTab: "po" | "ship";
-    onSnapshotDate?: (date: string | null) => void;
+    onSnapshotDate?: (date: string | null, gathDe: string | null) => void;
 }) {
     const [rows, setRows] = useState<SummaryRow[]>([]);
     const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
@@ -34,7 +36,7 @@ export default function SummaryBoard({
     const { t } = useLang();
 
     useEffect(() => {
-        fetch("/api/salessummary")
+        fetch(salesSummaryUrl(filters.gathDe))
             .then(r => r.json())
             .then(json => {
                 if (json.success) {
@@ -42,7 +44,7 @@ export default function SummaryBoard({
                     setShipRatio84d(json.shipRatio84d ?? {});
                     setTrendMedians(json.trendMedians ?? {});
                     setTrendMediansByWh(json.trendMediansByWh ?? {});
-                    onSnapshotDate?.(json.snapshotDate ?? null);
+                    onSnapshotDate?.(json.snapshotDate ?? null, json.gathDe ?? null);
                 }
             })
             .finally(() => setLoading(false));
@@ -58,10 +60,10 @@ export default function SummaryBoard({
                 setForecastMap(map);
             });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [filters.gathDe]);
 
     const poSummary = useMemo(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians, baseDateFromGathDe(filters.gathDe));
 
         if (filters.skuQuery) {
             const q = filters.skuQuery.toUpperCase();
@@ -85,34 +87,10 @@ export default function SummaryBoard({
         return { needCount, totalQty, healthyCount };
     }, [rows, filters, shipRatio84d, forecastMap, trendMedians]);
 
-    const shipSummary = useMemo(() => {
-        const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
-            (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
-        );
-        const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh);
-        let calc = table2;
-
-        if (filters.skuQuery) {
-            const q = filters.skuQuery.toUpperCase();
-            calc = calc.filter(r => r.sku.toUpperCase().includes(q));
-        }
-        if (filters.factory.length > 0) {
-            calc = calc.filter(r => filters.factory.includes(r.factory));
-        }
-        if (filters.warehouse.length > 0) {
-            calc = calc.filter(r => filters.warehouse.includes(r.wh));
-        }
-
-        const skuShipSum = new Map<string, number>();
-        for (const r of calc) skuShipSum.set(r.sku, (skuShipSum.get(r.sku) ?? 0) + r.shipQty);
-
-        const totalSkuCount = skuShipSum.size;
-        const needCount = [...skuShipSum.values()].filter(v => v > 0).length;
-        const totalQty = calc.reduce((sum, r) => sum + r.shipQty, 0);
-        const healthyCount = totalSkuCount - needCount;
-
-        return { needCount, totalQty, healthyCount };
-    }, [rows, filters, shipRatio84d, forecastMap, trendMediansByWh]);
+    const shipSummary = useMemo(
+        () => computeShipSummary(rows, filters, shipRatio84d, forecastMap, trendMediansByWh, baseDateFromGathDe(filters.gathDe)),
+        [rows, filters, shipRatio84d, forecastMap, trendMediansByWh],
+    );
 
     if (loading) {
         return (

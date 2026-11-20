@@ -30,8 +30,11 @@ export type ForecastMap = Record<string, Record<string, number>>;
 /** 오늘(America/Los_Angeles, PST/PDT 자동 적용) 자정 기준 Date. Manual 모드 기준일로 쓴다.
  *  isPO=true(발주 계산)면 순수 PST 기준일 그대로, false(선적 계산, 기본값)면 21일을 더한다
  *  — 생산계획은 2주뒤의것, 생산계획 준 후에 또 1주 해서 21일 더하기. */
-export function getManualReferenceDate(isPO: boolean = false): Date {
-    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
+export function getManualReferenceDate(isPO: boolean = false, baseDate?: Date): Date {
+    // baseDate: 과거 스냅샷 기준으로 계산할 때 그 스냅샷 날짜(없으면 오늘 PST)
+    const pstNow = baseDate
+        ? new Date(baseDate)
+        : new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
     pstNow.setHours(0, 0, 0, 0);
     if (!isPO) pstNow.setDate(pstNow.getDate() + 21);
     return pstNow;
@@ -51,8 +54,8 @@ function ymFromDate(d: Date): string {
 }
 
 /** Manual 모드에서 기준일(오늘 PST/PDT) + 리드타임(lt)이 실제로 가리키는 YM("YYYYMM"). 사이드바 안내 표시용. */
-export function manualTargetYm(lt: number, isPO: boolean = false): string {
-    return ymFromDate(addDays(getManualReferenceDate(isPO), lt));
+export function manualTargetYm(lt: number, isPO: boolean = false, baseDate?: Date): string {
+    return ymFromDate(addDays(getManualReferenceDate(isPO, baseDate), lt));
 }
 
 /**
@@ -68,10 +71,11 @@ export function manualDailyForWh(
     forecastMap: ForecastMap,
     shipRatio84d: Record<string, ActualRatio>,
     isPO: boolean = false,
+    baseDate?: Date,
 ): number | null {
     if (!RATIO_WAREHOUSES.includes(wh as RatioWh)) return null; // WF 제외
 
-    const targetYm = manualTargetYm(lt, isPO);
+    const targetYm = manualTargetYm(lt, isPO, baseDate);
     const frcstQty = forecastMap[sku]?.[targetYm];
     const ratio = shipRatio84d[sku]?.[wh as RatioWh];
     if (frcstQty == null || ratio == null) return null;
@@ -184,6 +188,8 @@ export function computeShipTables(
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
     trendMediansByWh: TrendMedianByWhMap = {},
+    /** 과거 스냅샷 기준 계산 시 그 스냅샷 날짜(매뉴얼 예측 YM 기준일). 없으면 오늘 PST. */
+    baseDate?: Date,
 ): { table1: Ship1Row[]; table2: Ship2Row[] } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
@@ -253,7 +259,7 @@ export function computeShipTables(
             }
 
             const manualDaily = (logicMode === "manual" || logicMode === "default_manual")
-                ? manualDailyForWh(r.SKU, wh, lt, forecastMap, shipRatio84d)
+                ? manualDailyForWh(r.SKU, wh, lt, forecastMap, shipRatio84d, false, baseDate)
                 : null;
             // Manual 모드에서 매뉴얼 예측치가 있으면 그걸로 실제 계산을 대체한다 (캡은 Manual 포함 전체 적용).
             const effectiveDaily = manualDaily ?? daily;

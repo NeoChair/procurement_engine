@@ -52,6 +52,8 @@ export function computePoCalc(
     shipRatio84d: Record<string, ActualRatio> = {},
     forecastMap: ForecastMap = {},
     trendMedians: Record<string, TrendMedianWindow> = {},
+    /** 선택한 스냅샷 날짜(매뉴얼 예측 YM 기준일). 없으면 오늘 PST. */
+    baseDate?: Date,
 ): PoCalcRow[] {
     const result: PoCalcRow[] = [];
     const useManual = logicMode === "manual" || logicMode === "default_manual";
@@ -61,7 +63,7 @@ export function computePoCalc(
         // 발주는 창고 리드타임(lt)이 아니라 발주 기간(기본 120일, TYJ·DMS 90일) 기준으로 미래를 내다보므로,
         // 매뉴얼 예측치 대상월도 lt가 아니라 발주 기간으로 계산해야 한다(선적 엔진과는 기준이 다름).
         const horizonDays = poHorizonDays(r.SKU);
-        const manualYm = useManual ? manualTargetYm(horizonDays, true) : null;
+        const manualYm = useManual ? manualTargetYm(horizonDays, true, baseDate) : null;
 
         // 매뉴얼 예측치(FRCST_STOCK)는 SKU 전체 기준 "일 예상판매량"이라 창고별로 쪼갤 이유가 없다.
         // 예전엔 84일 실출고비율로 창고별로 나눴다가 합산할 때 다시 더했는데, 그 과정에서 부동소수점
