@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
@@ -59,7 +60,7 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch("/api/salessummary")
+        fetch(salesSummaryUrl(filters.gathDe))
             .then(r => r.json())
             .then(json => {
                 if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
@@ -80,10 +81,10 @@ export default function PoTable2({ filters }: { filters: FilterState }) {
                 }
                 setForecastMap(map);
             });
-    }, []);
+    }, [filters.gathDe]);
 
     const displayRows = useMemo<DisplayRow[]>(() => {
-        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians);
+        let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians, baseDateFromGathDe(filters.gathDe));
 
         calc = calc.filter(r => MAIN_SKU_MAP.get(r.sku)?.IsOn !== "FALSE");
 

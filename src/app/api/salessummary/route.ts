@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
 import { RATIO_WAREHOUSES, type RatioWh } from "@/lib/calc/rebalance";
 import { isHiddenSku } from "@/lib/calc/logicMode";
@@ -158,7 +158,7 @@ const WH_SHIP_84D_QUERY = `
         SUM(CASE WHEN o.WAREHOUSE IN ('14632', '14633', '14635') THEN o.QTY ELSE 0 END) AS GA_QTY
     FROM [HGBC].[SD].[TB_ORD_DAIL] o
     JOIN (SELECT DISTINCT ITM_ID, INVT_SKU FROM [HGBC].[SD].[TB_PROD_GROUP]) pg ON o.ITM_ID = pg.ITM_ID
-    WHERE o.ORD_DE >= @cutoffDate
+    WHERE o.ORD_DE >= @cutoffDate AND o.ORD_DE < @endDate
       AND pg.INVT_SKU <> ''
       AND o.WAREHOUSE IN ('14630', '14631', '14632', '14633', '14634', '14635', '14636', '24374')
     GROUP BY pg.INVT_SKU
@@ -200,30 +200,30 @@ const WH_STOCK_SNAP_QUERY = `
     GROUP BY b.SKU, b.GATH_DE
 `;
 
-/** 오늘(PST) 기준 daysAgo일 전 00:00:00(PST) 문자열을 반환한다. */
-function getPstCutoffDate(daysAgo: number): string {
+/** 오늘(PST) 날짜(YYYY-MM-DD). */
+function getPstToday(): string {
     const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
-    pstNow.setDate(pstNow.getDate() - daysAgo);
-    const y = pstNow.getFullYear();
-    const m = String(pstNow.getMonth() + 1).padStart(2, "0");
-    const d = String(pstNow.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d} 00:00:00`;
-}
-
-/** 오늘(PST) 기준 daysAgo일 전 날짜만(YYYY-MM-DD, 시간 없음). */
-function getPstDateOnly(daysAgo: number): string {
-    const pstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" }));
-    pstNow.setDate(pstNow.getDate() - daysAgo);
     const y = pstNow.getFullYear();
     const m = String(pstNow.getMonth() + 1).padStart(2, "0");
     const d = String(pstNow.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
 }
 
+/** 기준일(refDate, YYYY-MM-DD) 기준 daysAgo일 전 날짜(YYYY-MM-DD). 기준일은 오늘(PST) 또는 선택한 스냅샷 날짜. */
+function getDateOnly(refDate: string, daysAgo: number): string {
+    const [y, m, d] = refDate.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d - daysAgo)).toISOString().slice(0, 10);
+}
+
+/** 기준일 기준 daysAgo일 전 00:00:00 문자열. */
+function getCutoffDate(refDate: string, daysAgo: number): string {
+    return `${getDateOnly(refDate, daysAgo)} 00:00:00`;
+}
+
 /** startDaysAgo(더 과거) ~ endDaysAgo(더 최근) 사이 날짜 목록(YYYY-MM-DD), startDaysAgo부터 endDaysAgo+1일까지. */
-function pstDateRange(startDaysAgo: number, endDaysAgo: number): string[] {
+function dateRange(refDate: string, startDaysAgo: number, endDaysAgo: number): string[] {
     const dates: string[] = [];
-    for (let d = startDaysAgo; d > endDaysAgo; d--) dates.push(getPstDateOnly(d));
+    for (let d = startDaysAgo; d > endDaysAgo; d--) dates.push(getDateOnly(refDate, d));
     return dates;
 }
 
@@ -310,7 +310,8 @@ const SUMMARY_PIVOT_COLUMNS = SUMMARY_METRICS.flatMap((m) => [
 //SUMMARY QUERY
 const SUMMARY_QUERY = `
     WITH latest AS (
-        SELECT MAX(GATH_DE) AS GATH_DE FROM [HGBC].[RPA].[TB_SALES_STOCK_SUMMARY_BACKUP]
+        -- @gathDe가 있으면 그 스냅샷, 없으면(NULL) 최신 스냅샷
+        SELECT COALESCE(@gathDe, MAX(GATH_DE)) AS GATH_DE FROM [HGBC].[RPA].[TB_SALES_STOCK_SUMMARY_BACKUP]
     ),
     summary AS (
         SELECT
@@ -369,11 +370,23 @@ ${SUMMARY_PIVOT_COLUMNS.map((c) => `        ISNULL(s.${c.name}, 0) AS ${c.name}`
     LEFT JOIN plan_qty pq ON a.SKU = pq.SKU
 `;
 
-export async function GET() {
+/**
+ * ?gathDe=YYYYMMDDAM|PM 이 있으면 그 스냅샷 기준으로 계산한다(사이드바 과거 선적량 조회용).
+ * 이때 실 출고비율·추세 중위값도 오늘이 아니라 그 스냅샷 날짜를 기준일로 다시 계산하고,
+ * 그 날짜 당일 및 이후 주문은 쓰지 않는다(그날 앱이 알 수 없었던 데이터).
+ */
+export async function GET(request: NextRequest) {
     try {
+        const gathDeParam = request.nextUrl.searchParams.get("gathDe");
+        const gathDe = gathDeParam && /^\d{8}(AM|PM)$/.test(gathDeParam) ? gathDeParam : null;
+        const refDate = gathDe
+            ? `${gathDe.slice(0, 4)}-${gathDe.slice(4, 6)}-${gathDe.slice(6, 8)}`
+            : getPstToday();
+
         const db = await getDb();
         const result = await db
             .request()
+            .input("gathDe", sql.VarChar, gathDe)
             .query<SummaryRow>(SUMMARY_QUERY);
 
         const rows = result.recordset.filter((r) => !isHiddenSku(r.SKU));
@@ -383,7 +396,9 @@ export async function GET() {
 
         const whShipResult = await db
             .request()
-            .input("cutoffDate", sql.VarChar, getPstCutoffDate(84))
+            .input("cutoffDate", sql.VarChar, getCutoffDate(refDate, 84))
+            // 오늘 기준이면 기존처럼 상한 없음, 과거 스냅샷이면 그 날짜 이전 주문만
+            .input("endDate", sql.VarChar, gathDe ? `${refDate} 00:00:00` : "9999-12-31 00:00:00")
             .query<WhShipRow>(WH_SHIP_84D_QUERY);
 
         const toRatio = (q: { CA: number; TX: number; NJ: number; GA: number }): ShipRatio84d | null => {
@@ -400,8 +415,8 @@ export async function GET() {
         }
 
         // clean day 비율: 날짜의 모든 스냅샷에서 4개 창고 재고가 전부 CLEAN_MIN_STOCK 이상인 날만,
-        // 최근부터 최대 CLEAN_MAX_DAYS일 모아 출고 비율을 낸다. 오늘(PST)은 주문이 덜 쌓였으므로 제외.
-        const today = getPstDateOnly(0);
+        // 최근부터 최대 CLEAN_MAX_DAYS일 모아 출고 비율을 낸다. 기준일(오늘 PST/스냅샷 날짜)은 주문이 덜 쌓였으므로 제외.
+        const today = refDate;
         const [stockSnapResult, whShipDailyResult] = await Promise.all([
             db.request()
                 .input("startYmd", sql.VarChar, CLEAN_START_DATE.replace(/-/g, ""))
@@ -452,8 +467,8 @@ export async function GET() {
         // 선적은 창고별로 따로 낸다(선적은 창고 단위로 재고/리드타임을 관리하므로 SKU 전체 추세로 뭉개면 안 됨).
         const trendDailyResult = await db
             .request()
-            .input("startDate", sql.VarChar, getPstCutoffDate(395))
-            .input("endDate", sql.VarChar, getPstCutoffDate(215))
+            .input("startDate", sql.VarChar, getCutoffDate(refDate, 395))
+            .input("endDate", sql.VarChar, getCutoffDate(refDate, 215))
             .query<DailyQtyByWhRow>(TREND_DAILY_BY_WH_QUERY);
 
         const dailyByWhMap = new Map<string, Map<string, Record<RatioWh, number>>>();
@@ -463,7 +478,7 @@ export async function GET() {
             dailyByWhMap.get(r.SKU)!.set(dateStr, { CA: r.CA_QTY, TX: r.TX_QTY, NJ: r.NJ_QTY, GA: r.GA_QTY });
         }
 
-        const windowDates = TREND_WINDOW_BOUNDS.map(w => ({ key: w.key, dates: pstDateRange(w.startDaysAgo, w.endDaysAgo) }));
+        const windowDates = TREND_WINDOW_BOUNDS.map(w => ({ key: w.key, dates: dateRange(refDate, w.startDaysAgo, w.endDaysAgo) }));
 
         const trendMedians: Record<string, TrendMedians> = {};
         const trendMediansByWh: Record<string, Partial<Record<RatioWh, TrendMedians>>> = {};
@@ -489,6 +504,8 @@ export async function GET() {
             success: true,
             data: rows,
             snapshotDate,
+            gathDe: rows.find((r) => r.GATH_DE)?.GATH_DE ?? null,
+            refDate,
             shipRatio84d,
             trendMedians,
             trendMediansByWh,

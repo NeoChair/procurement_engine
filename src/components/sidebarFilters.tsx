@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
 import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
+import { baseDateFromGathDe, formatGathDe } from "@/lib/snapshot";
 import { PO_HORIZON_DAYS, PO_HORIZON_DAYS_SHORT } from "@/lib/calc/poCalc";
 import { useLang, type Lang } from "@/lib/i18n";
 
@@ -14,6 +15,8 @@ export type FilterState = {
     logicMode: LogicMode;
     rebalance: boolean;
     week1AllocMode: Week1AllocMode;
+    /** 선택한 스냅샷 날짜(GATH_DE, 'YYYYMMDDAM|PM'). 빈 문자열이면 최신 스냅샷. 발주/선적 엔진·PO 목록 전체가 이 날짜 데이터로 계산된다. */
+    gathDe: string;
 };
 
 function SelectArrowIcon() {
@@ -277,11 +280,19 @@ export default function SidebarFilter({
     const [width, setWidth] = useState(DEFAULT_WIDTH);
     const [collapsed, setCollapsed] = useState(false);
     const [availableYms, setAvailableYms] = useState<Set<string>>(new Set());
+    const [snapshotDates, setSnapshotDates] = useState<string[]>([]);
     const isResizing = useRef(false);
 
     function update(partial: Partial<FilterState>) {
         onFilterChange({ ...filters, ...partial });
     }
+
+    // 스냅샷 3개 테이블(판매/재고 BACKUP, 선적계획, 이동중재고)에 모두 있는 날짜만 선택지로 쓴다.
+    useEffect(() => {
+        fetch("/api/snapshotdates")
+            .then(r => r.json())
+            .then(json => { if (json.success) setSnapshotDates(json.data as string[]); });
+    }, []);
 
     useEffect(() => {
         fetch("/api/forecast")
@@ -394,6 +405,23 @@ export default function SidebarFilter({
                         placeholder={t("창고 선택...", "Select warehouse...")}
                     />
                 </div>
+                <hr className="border-gray-300" />
+
+                <div className="flex flex-col gap-1">
+                    <label className="text-md font-medium text-gray-700">📅 {t("데이터 기준일 (스냅샷)", "Data Date (Snapshot)")}</label>
+                    <CustomSelect
+                        options={snapshotDates.map((g, i) => ({
+                            value: g,
+                            label: i === 0 ? `${formatGathDe(g)} (${t("최신", "Latest")})` : formatGathDe(g),
+                        }))}
+                        // 빈 문자열(최신)이면 목록 맨 위(최신)가 선택된 것으로 보인다.
+                        value={filters.gathDe || snapshotDates[0] || ""}
+                        // 최신 날짜를 고르면 다시 ""(최신 모드)로 둬서 기존 동작과 똑같이 계산되게 한다.
+                        onChange={v => update({ gathDe: v === snapshotDates[0] ? "" : v })}
+                        bordered={false}
+                    />
+                </div>
+
                 {/* 선적비율 재배분 */}
                 <hr className="border-gray-300" />
                 
@@ -500,11 +528,12 @@ export default function SidebarFilter({
                     </div> */}
 
                     {(filters.logicMode === "manual" || filters.logicMode === "default_manual") && (() => {
-                        const poYm = manualTargetYm(PO_HORIZON_DAYS, true);
-                        const poShortYm = manualTargetYm(PO_HORIZON_DAYS_SHORT, true);
+                        const baseDate = baseDateFromGathDe(filters.gathDe);
+                        const poYm = manualTargetYm(PO_HORIZON_DAYS, true, baseDate);
+                        const poShortYm = manualTargetYm(PO_HORIZON_DAYS_SHORT, true, baseDate);
                         const poShortHasData = availableYms.has(poShortYm);
-                        const caYm = manualTargetYm(WH_GROUPS.CA.lt);
-                        const njYm = manualTargetYm(WH_GROUPS.NJ.lt);
+                        const caYm = manualTargetYm(WH_GROUPS.CA.lt, false, baseDate);
+                        const njYm = manualTargetYm(WH_GROUPS.NJ.lt, false, baseDate);
                         const poHasData = availableYms.has(poYm);
                         const caHasData = availableYms.has(caYm);
                         const njHasData = availableYms.has(njYm);
@@ -512,8 +541,8 @@ export default function SidebarFilter({
                         return (
                             <div className="flex flex-col gap-1 rounded-md bg-[#ff4b4b]/5 p-2">
                                 <span className="text-sm font-bold text-[#ff4b4b]">📌 {lang === "en"
-                                    ? `YM applied as of Shipping Plan ${formatDate(getManualReferenceDate())} / Purchase Order ${formatDate(getManualReferenceDate(true))}`
-                                    : `기준일 선적 ${formatDate(getManualReferenceDate())} / 발주 ${formatDate(getManualReferenceDate(true))} 기준 적용 YM`}</span>
+                                    ? `YM applied as of Shipping Plan ${formatDate(getManualReferenceDate(false, baseDate))} / Purchase Order ${formatDate(getManualReferenceDate(true, baseDate))}`
+                                    : `기준일 선적 ${formatDate(getManualReferenceDate(false, baseDate))} / 발주 ${formatDate(getManualReferenceDate(true, baseDate))} 기준 적용 YM`}</span>
                                 <span className="text-sm text-gray-500">
                                     📌 {t(`발주(${PO_HORIZON_DAYS}일)`, `Purchase Order (${PO_HORIZON_DAYS} days)`)}: {poHasData ? formatYm(poYm, lang) : noData}
                                 </span>

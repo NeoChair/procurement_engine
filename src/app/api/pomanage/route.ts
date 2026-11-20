@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import sql from "mssql";
 
 /** TB_INTRANSIT_STOCK_DAIL: 실입고 진행중(이동중재고) PO 라인. */
 export type IntransitPoRow = {
@@ -29,12 +30,13 @@ export type PlanPoRow = {
     ETA: string | null;
 };
 
-// 두 테이블 모두 GATH_DE(수집일자)가 쌓이는 스냅샷 구조라, 최신 스냅샷(GATH_DE = MAX)만 사용한다.
+// 두 테이블 모두 GATH_DE(수집일자)가 쌓이는 스냅샷 구조라, 한 스냅샷만 사용한다.
+// @gathDe(사이드바에서 고른 스냅샷)가 있으면 그 스냅샷, 없으면(NULL) 최신 스냅샷(MAX).
 const INTRANSIT_QUERY = `
     SELECT
         OWNR_ETP_CD, PO_NO, ITM_ID, GATH_DE, CONT_NO, SUPL_FACT, WRHS_NM, QTY, ETA, ETD
     FROM [HGBC].[RPA].[TB_INTRANSIT_STOCK_DAIL]
-    WHERE GATH_DE = (SELECT MAX(GATH_DE) FROM [HGBC].[RPA].[TB_INTRANSIT_STOCK_DAIL])
+    WHERE GATH_DE = COALESCE(@gathDe, (SELECT MAX(GATH_DE) FROM [HGBC].[RPA].[TB_INTRANSIT_STOCK_DAIL]))
       AND PO_NO IS NOT NULL AND PO_NO <> ''
 `;
 
@@ -44,17 +46,19 @@ const PLAN_QUERY = `
     SELECT
         OWNR_ETP_CD, GATH_DE, PO_NO, ITM_ID, SUPL_FACT, WRHS_CD AS WRHS_NM, QTY, YEAR_WEEK_NO, ETD, ETA
     FROM [HGBC].[RPA].[TB_SHIPPING_PLAN_STOCK]
-    WHERE GATH_DE = (SELECT MAX(GATH_DE) FROM [HGBC].[RPA].[TB_SHIPPING_PLAN_STOCK])
+    WHERE GATH_DE = COALESCE(@gathDe, (SELECT MAX(GATH_DE) FROM [HGBC].[RPA].[TB_SHIPPING_PLAN_STOCK]))
       AND PO_NO IS NOT NULL AND PO_NO <> ''
 `;
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const gathDeParam = request.nextUrl.searchParams.get("gathDe");
+        const gathDe = gathDeParam && /^\d{8}(AM|PM)$/.test(gathDeParam) ? gathDeParam : null;
         const db = await getDb();
 
         const [intransitResult, planResult] = await Promise.all([
-            db.request().query<IntransitPoRow>(INTRANSIT_QUERY),
-            db.request().query<PlanPoRow>(PLAN_QUERY),
+            db.request().input("gathDe", sql.VarChar, gathDe).query<IntransitPoRow>(INTRANSIT_QUERY),
+            db.request().input("gathDe", sql.VarChar, gathDe).query<PlanPoRow>(PLAN_QUERY),
         ]);
 
         return NextResponse.json({

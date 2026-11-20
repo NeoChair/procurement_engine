@@ -10,6 +10,7 @@ import SummaryBoard from "@/components/summaryBoard";
 import SidebarFilter, { type FilterState } from "@/components/sidebarFilters";
 import ForecastManage from "@/components/forecastManage";
 import { LanguageProvider, useLang } from "@/lib/i18n";
+import { formatGathDe } from "@/lib/snapshot";
 
 const DEFAULT_FILTERS: FilterState = {
     skuQuery: "",
@@ -18,6 +19,7 @@ const DEFAULT_FILTERS: FilterState = {
     logicMode: "default_manual",
     rebalance: false,
     week1AllocMode: "actual_ratio",
+    gathDe: "",
 };
 
 export default function Home() {
@@ -32,7 +34,8 @@ function HomeContent() {
     const { t } = useLang();
     const [activeTab, setActiveTab] = useState<"po" | "ship" | "pomanage">("po");
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-    const [snapshotDate, setSnapshotDate] = useState<string | null | undefined>(undefined);
+    // 화면에 실제로 불러온 스냅샷(GATH_DE). undefined=불러오는 중, null=정보 없음
+    const [dataGathDe, setDataGathDe] = useState<string | null | undefined>(undefined);
 
     return (
         <div className="flex h-screen overflow-hidden ">
@@ -41,9 +44,13 @@ function HomeContent() {
             <div className="flex-1 overflow-y-auto px-10 ">
                 <div className="w-full my-[130px]">
                     <div className="w-auto bg-[#1C83E11A] h-15  mb-8 flex flex-row items-center ps-4 rounded-md gap-2">
-                        <span className="text-[#004280] font-medium">Last Updated: PST</span>
+                        <span className="text-[#004280] font-medium">Selected Data Date (PST):</span>
                         <span className="text-[#004280] font-normal">
-                            {snapshotDate === undefined ? t("불러오는 중...", "Loading...") : snapshotDate === null ? t("기준일 정보 없음", "No snapshot date") : snapshotDate}
+                            {/* 과거 날짜를 고르면 그 날짜를 바로 보여주고(PO 목록 탭에서도), 최신이면 실제 불러온 최신 스냅샷을 보여준다. */}
+                            {filters.gathDe ? formatGathDe(filters.gathDe)
+                                : dataGathDe === undefined ? t("불러오는 중...", "Loading...")
+                                : dataGathDe === null ? t("기준일 정보 없음", "No snapshot date")
+                                : `${formatGathDe(dataGathDe)} (${t("최신", "Latest")})`}
                         </span>
                     </div>
 
@@ -101,12 +108,12 @@ function HomeContent() {
                     </ul>
 
                     {activeTab !== "pomanage" && (
-                        <SummaryBoard filters={filters} activeTab={activeTab} onSnapshotDate={setSnapshotDate} />
+                        <SummaryBoard key={filters.gathDe} filters={filters} activeTab={activeTab} onSnapshotDate={(_, gathDe) => setDataGathDe(gathDe)} />
                     )}
 
                     <hr className="border-gray-300 my-4" />
 
-                    <div key={activeTab} className="animate-fade-in py-4">
+                    <div key={`${activeTab}__${filters.gathDe}`} className="animate-fade-in py-4">
                         {activeTab === "po" && (
                             <div id="tab1" role="tabpanel" aria-labelledby="poTab">
                                 <h2 className="text-3xl font-bold mb-4">📋 {t("발주 Table 1 (판매량 비교)", "Purchase Order Table 1 (Sales Comparison)")}</h2>
