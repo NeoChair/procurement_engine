@@ -140,6 +140,9 @@ export type Ship2Row = {
 
 /** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화.
  *  cy7/cy28/cy56은 이제 구간 합계가 아니라 일별 판매량의 중위값으로 들어오므로 일수로 나누지 않는다. */
+/** default_manual 모드에서 일판매량·리드타임 소요량에 곱하는 추세 배수의 상한(2 = 200%). */
+export const TREND_MAX = 2;
+
 function floorDailyDemand(cy7: number, cy28: number, cy56: number): number {
     const dd56 = cy56 > 0 ? cy56 : 0;
     const dd28 = cy28 > 0 ? cy28 : 0;
@@ -237,18 +240,20 @@ export function computeShipTables(
                 for (let i = startIdx; i >= 0; i--) {
                     if (trendRatios[i] >= 1) { shipTrend = trendRatios[i]; break; }
                 }
+                // 추세 배수 상한: 최대 2배(200%)까지만 곱한다.
+                shipTrend = Math.min(TREND_MAX, shipTrend);
                 const baseDaily = newProductDaily(cy7, cy28, cy56);
                 daily = baseDaily * shipTrend;
 
                 // 리드타임 소요량: 리드타임을 30일 구간으로 나눠 구간마다 그 구간 추세를 곱해서 더한다(누적 곱 아님).
                 // 예) lt=72 → 기본×추세1×30 + 기본×추세2×30 + 기본×추세3×12,
                 //     lt=92 → 기본×추세1×30 + 기본×추세2×30 + 기본×추세3×30 + 기본×추세4×2.
-                // 추세가 1 미만(하락)인 구간은 1로 본다.
+                // 추세가 1 미만(하락)인 구간은 1로, 2 초과인 구간은 2로 본다.
                 trendPredPeriod = 0;
                 for (let i = 0; i * 30 < lt; i++) {
                     const days = Math.min(30, lt - i * 30);
                     const t = trendRatios[Math.min(i, trendRatios.length - 1)];
-                    trendPredPeriod += baseDaily * Math.max(1, t) * days;
+                    trendPredPeriod += baseDaily * Math.min(TREND_MAX, Math.max(1, t)) * days;
                 }
             } else if (isNew) {
                 daily = newProductDaily(cy7, cy28, cy56);
