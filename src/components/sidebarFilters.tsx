@@ -408,7 +408,7 @@ export default function SidebarFilter({
                 <hr className="border-gray-300" />
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-md font-medium text-gray-700">📅 {t("데이터 기준일 (스냅샷)", "Data Date (Snapshot)")}</label>
+                    <label className="text-md font-medium text-gray-700">📅 {t("데이터 기준일", "Data Collected Date")}</label>
                     <CustomSelect
                         options={snapshotDates.map((g, i) => ({
                             value: g,

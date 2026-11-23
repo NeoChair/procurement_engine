@@ -1,7 +1,7 @@
 // 발주 계산 — 창고별 일 예상판매량(Daily, 선적 엔진과 동일 로직) 기반
 import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
-import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap } from "./shipCalc";
+import { WH_GROUPS, type WhKey, manualTargetYm, type ForecastMap, TREND_MAX } from "./shipCalc";
 import { RATIO_WAREHOUSES, type RatioWh, type ActualRatio } from "./rebalance";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 
@@ -168,13 +168,15 @@ export function computePoCalc(
             // 배수를 곱해서 더한다. 각 구간(idx)은 자기 위치부터 거꾸로 medianTrend와 같은 캐스케이드를 다시
             // 태운다: (추세idx - 추세(idx-1)) 차이가 0 이상(증가)인 첫 지점을 배수로 쓰되, 두 추세가 둘 다
             // 1 미만이면 그 pair는 건너뛴다. 못 찾으면 추세1 자체(1 이상일 때만), 그마저 없으면 1배.
+            // 배수 범위: 어떤 경로로 구해지든 1배(하한) ~ 2배(TREND_MAX, 상한) 사이로 맞춘다.
+            const clampTrend = (t: number): number => Math.min(TREND_MAX, Math.max(1, t));
             const resolvedTermTrend = (idx: number): number => {
                 for (let j = idx; j >= 1; j--) {
                     if (ratios[j] < 1 && ratios[j - 1] < 1) continue;
                     const diff = ratios[j] - ratios[j - 1];
-                    if (diff >= 0) return diff;
+                    if (diff >= 0) return clampTrend(diff);
                 }
-                return ratios[0] >= 1 ? ratios[0] : 1;
+                return clampTrend(ratios[0]);
             };
             const termCount = horizonDays / 30;
             let poPred120 = 0;
