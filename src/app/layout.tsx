@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/queryProvider";
 
 const sourceSansPro = Source_Sans_3({
   variable: "--font-sans",
@@ -26,7 +27,7 @@ export default function RootLayout({
       className={`${sourceSansPro.variable} h-full antialiased`}
     >
       <body className="min-h-full antialiased">
-        {children}
+        <QueryProvider>{children}</QueryProvider>
       </body>
     </html>
   );

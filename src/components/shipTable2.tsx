@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
-import type { SummaryRow } from "@/app/api/salessummary/route";
+import { baseDateFromGathDe } from "@/lib/snapshot";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
-import type { ActualRatio } from "@/lib/calc/rebalance";
-import type { ForecastRow } from "@/app/api/forecast/route";
+import { computeShipTables, type Ship2Row } from "@/lib/calc/shipCalc";
+import { useSalesSummary, useForecastMap, EMPTY_SUMMARY } from "@/lib/queries";
 import { isWhOn } from "@/lib/calc/skuRules";
 import { useLang } from "@/lib/i18n";
 
@@ -237,12 +235,11 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 
 export default function ShipTable2({ filters }: { filters: FilterState }) {
     const { t } = useLang();
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
-    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const forecastMap = useForecastMap();
+    const { data: rows, shipRatio84d, trendMediansByWh } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
+    const error = summaryQuery.error?.message ?? null;
     // SKU+창고(row.key)별 사람이 직접 고친 선적량/2~5주차. 세션 임시 상태 — DB에는 저장하지 않는다.
     const [overrides, setOverrides] = useState<Record<string, RowOverride>>({});
 
@@ -257,30 +254,6 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
             return next;
         });
     }
-
-    useEffect(() => {
-        fetch(salesSummaryUrl(filters.gathDe))
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
-                setRows(json.data as SummaryRow[]);
-                setShipRatio84d(json.shipRatio84d ?? {});
-                setTrendMediansByWh(json.trendMediansByWh ?? {});
-            })
-            .catch(err => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setLoading(false));
-
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const map: ForecastMap = {};
-                for (const row of json.data as ForecastRow[]) {
-                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
-                }
-                setForecastMap(map);
-            });
-    }, [filters.gathDe]);
 
     const displayRows = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(

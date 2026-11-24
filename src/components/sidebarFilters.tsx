@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useForecastRows } from "@/lib/queries";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
 import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
@@ -279,7 +280,8 @@ export default function SidebarFilter({
     const { lang, setLang, t } = useLang();
     const [width, setWidth] = useState(DEFAULT_WIDTH);
     const [collapsed, setCollapsed] = useState(false);
-    const [availableYms, setAvailableYms] = useState<Set<string>>(new Set());
+    const { data: forecastRows } = useForecastRows();
+    const availableYms = useMemo(() => new Set((forecastRows ?? []).map(r => r.YEAR_MONTH)), [forecastRows]);
     const [snapshotDates, setSnapshotDates] = useState<string[]>([]);
     const isResizing = useRef(false);
 
@@ -294,15 +296,6 @@ export default function SidebarFilter({
             .then(json => { if (json.success) setSnapshotDates(json.data as string[]); });
     }, []);
 
-    useEffect(() => {
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const yms = new Set<string>((json.data as { YEAR_MONTH: string }[]).map(r => r.YEAR_MONTH));
-                setAvailableYms(yms);
-            });
-    }, []);
 
     useEffect(() => {
         function handleMouseMove(e: MouseEvent) {
