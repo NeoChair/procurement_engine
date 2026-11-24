@@ -6,7 +6,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, WH_GROUPS, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 import type { ActualRatio } from "@/lib/calc/rebalance";
 import type { ForecastRow } from "@/app/api/forecast/route";
 import { isWhOn } from "@/lib/calc/skuRules";
@@ -61,7 +61,9 @@ const WEEK_FIELDS: WeekField[] = ["shipQty", "week2", "week3", "week4", "week5"]
  *  (도움 컬럼 캐시값으로 쓰인다). overridden은 그 필드를 "사람이 직접" 고쳤는지 여부(화면 강조용). */
 function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
     const daily = r.manualDaily ?? r.daily ?? 0;
-    const lt = WH_GROUPS[r.wh].lt;
+    // 리드타임 소요량은 엔진(shipCalc)이 계산한 predPeriod를 그대로 쓴다 — 1주차 선적량과 같은 기준이어야
+    // 1주차↔2~5주차가 이어진다(daily×lt로 다시 계산하면 추세 구간별 합산과 달라져서 어긋남).
+    const predPeriod = r.predPeriod ?? 0;
     const avail = (r.oh ?? 0) + (r.it ?? 0) + (r.shipPlan ?? 0);
     const need28 = r.need28d ?? 0;
     // MAIN_SKU에서 이 창고가 FALSE면 2~5주차 계산값도 0(사람이 직접 입력한 값은 그대로 존중).
@@ -72,7 +74,7 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
 
     const values = {} as Record<WeekField, number>;
     const overridden = {} as Record<WeekField, boolean>;
-    const proj: number[] = [Math.max(0, avail - daily * lt)];
+    const proj: number[] = [Math.max(0, avail - predPeriod)];
 
     let prevProjected = proj[0];
     let prevShip = 0;
@@ -96,26 +98,13 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
     return { values, overridden, proj };
 }
 
-/** WH_GROUPS(창고별 리드타임)를 엑셀 IF-체인 문자열로 펼친다. 별도 "리드타임" 컬럼을 안 두고
- *  이 식을 초기 예상재고 수식에 바로 박아 넣는 이유: 도움 컬럼 두 개가 나란히(연속으로) 숨김 처리되면
- *  ExcelJS가 xlsx로 저장할 때 뒤 컬럼의 hidden 속성을 누락시키는 버그가 있어서, 숨김 컬럼끼리 붙지
- *  않도록(항상 보이는 week 컬럼이 사이에 오도록) 구성해야 한다. */
-function ltFormulaExpr(row: number): string {
-    const entries = Object.entries(WH_GROUPS) as [string, { lt: number }][];
-    let expr = `${entries[entries.length - 1][1].lt}`;
-    for (let i = entries.length - 2; i >= 0; i--) {
-        const [wh, { lt }] = entries[i];
-        expr = `IF(C${row}="${wh}",${lt},${expr})`;
-    }
-    return expr;
-}
-
 /** 사람이 직접 고친 셀 표시(볼드+회색). 상태색(빨강 선적량 강조, Status 등)보다 우선한다 —
  *  "이 숫자는 자동계산이 아니라 내가 입력한 값"이라는 게 더 중요한 정보라서. */
 const OVERRIDE_CLASS = "!bg-gray-200 text-gray-900 font-bold";
 
 function buildShip2Columns(
     logicMode: FilterState["logicMode"],
+    rebalance: boolean,
     overrides: Record<string, RowOverride>,
     onEdit: (key: string, field: WeekField, value: number | null) => void,
     t: (ko: string, en: string) => string,
@@ -148,52 +137,64 @@ function buildShip2Columns(
         { key: "SP",       label: t("생산계획수량", "Stuffing Plan"),align: "right", getValue: r => r.shipPlan ?? 0,  render: r => n(r.shipPlan) },
         { key: "DAILY",    label: t("1일치 예상출고량", "Daily Forecast Outbound"),align: "right", getValue: r => r.manualDaily ?? r.daily ?? 0, render: r => nd(r.manualDaily ?? r.daily) },
         { key: "NEED28",   label: t("28일치 예상출고량", "28-Day Forecast Outbound"), align: "right", getValue: r => r.need28d ?? 0,   render: r => n(r.need28d) },
-        { ...weekColumn("shipQty", t("선적량", "Shipping Plan Qty")), key: "SHIP_QTY" },
+        // J열: 리드타임 기간 동안 예상 소요량(엔진 predPeriod). 1주차 선적량과 엑셀 초기 예상재고가 모두 이 값을 쓴다.
+        {
+            key: "PRED_PERIOD", label: t("리드타임 소요량", "Lead-Time Demand"), align: "right",
+            getValue: r => r.predPeriod ?? 0, render: r => n(r.predPeriod),
+        },
+        // K열: 1주차 선적량 = MIN(MAX(0, 28일치 − (가용재고 − 리드타임 소요량)), 28일치).
+        // 재배분(Rebalance)이 켜져 있으면 재배분 결과라서 수식으로 재현할 수 없으므로 값 그대로 둔다.
+        {
+            ...weekColumn("shipQty", t("선적량", "Shipping Plan Qty")), key: "SHIP_QTY",
+            getFormula: (r, row) => (rebalance || computeEffective(r, overrides[r.key]).overridden.shipQty || !isWhOn(r.sku, r.wh))
+                ? undefined
+                : `=ROUND(MIN(MAX(0,I${row}-((E${row}+F${row}+G${row})-J${row})),MAX(0,I${row})),0)`,
+        },
         // -- 아래 4개는 xlsx 다운로드에서 2~5주차 선적량을 살아있는 수식으로 재현하기 위한 도움 컬럼(화면엔 안 보임).
         // 숨김 컬럼끼리 나란히 붙으면 ExcelJS 저장 버그로 뒤엣것의 숨김이 풀리므로, 항상 보이는 week 컬럼을 사이에 둔다. --
         {
             key: "INIT_PROJ", label: t("초기 예상재고", "Initial Projected Stock"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[0],
-            getFormula: (_r, row) => `=MAX(0,(E${row}+F${row}+G${row})-H${row}*(${ltFormulaExpr(row)}))`,
+            getFormula: (_r, row) => `=MAX(0,(E${row}+F${row}+G${row})-J${row})`,
         },
         {
             ...weekColumn("week2", t("선적량 2주", "Shipping Plan Qty Week 2")), key: "WEEK2",
             getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week2 || !isWhOn(r.sku, r.wh))
                 ? undefined
-                : `=ROUND(MIN(MAX(0,I${row}-(K${row}+J${row}-H${row}*7)),MAX(0,I${row})),0)`,
+                : `=ROUND(MIN(MAX(0,I${row}-(L${row}+K${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
             key: "PROJ_W2", label: t("2주차 이후 예상재고", "Projected Stock after Week 2"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[1],
-            getFormula: (_r, row) => `=MAX(0,K${row}+J${row}-H${row}*7)`,
+            getFormula: (_r, row) => `=MAX(0,L${row}+K${row}-H${row}*7)`,
         },
         {
             ...weekColumn("week3", t("선적량 3주", "Shipping Plan Qty Week 3")), key: "WEEK3",
             getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week3 || !isWhOn(r.sku, r.wh))
                 ? undefined
-                : `=ROUND(MIN(MAX(0,I${row}-(M${row}+L${row}-H${row}*7)),MAX(0,I${row})),0)`,
+                : `=ROUND(MIN(MAX(0,I${row}-(N${row}+M${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
             key: "PROJ_W3", label: t("3주차 이후 예상재고", "Projected Stock after Week 3"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[2],
-            getFormula: (_r, row) => `=MAX(0,M${row}+L${row}-H${row}*7)`,
+            getFormula: (_r, row) => `=MAX(0,N${row}+M${row}-H${row}*7)`,
         },
         {
             ...weekColumn("week4", t("선적량 4주", "Shipping Plan Qty Week 4")), key: "WEEK4",
             getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week4 || !isWhOn(r.sku, r.wh))
                 ? undefined
-                : `=ROUND(MIN(MAX(0,I${row}-(O${row}+N${row}-H${row}*7)),MAX(0,I${row})),0)`,
+                : `=ROUND(MIN(MAX(0,I${row}-(P${row}+O${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
             key: "PROJ_W4", label: t("4주차 이후 예상재고", "Projected Stock after Week 4"), hiddenInView: true,
             getValue: r => computeEffective(r, overrides[r.key]).proj[3],
-            getFormula: (_r, row) => `=MAX(0,O${row}+N${row}-H${row}*7)`,
+            getFormula: (_r, row) => `=MAX(0,P${row}+O${row}-H${row}*7)`,
         },
         {
             ...weekColumn("week5", t("선적량 5주", "Shipping Plan Qty Week 5")), key: "WEEK5",
             getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week5 || !isWhOn(r.sku, r.wh))
                 ? undefined
-                : `=ROUND(MIN(MAX(0,I${row}-(Q${row}+P${row}-H${row}*7)),MAX(0,I${row})),0)`,
+                : `=ROUND(MIN(MAX(0,I${row}-(R${row}+Q${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
         {
             key: "STATUS",
@@ -296,8 +297,8 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
     }, [rows, filters, shipRatio84d, forecastMap, trendMediansByWh]);
 
     const columns = useMemo(
-        () => buildShip2Columns(filters.logicMode, overrides, handleEdit, t),
-        [filters.logicMode, overrides, t],
+        () => buildShip2Columns(filters.logicMode, filters.rebalance, overrides, handleEdit, t),
+        [filters.logicMode, filters.rebalance, overrides, t],
     );
 
     if (loading) return <div className="px-2 py-4 text-gray-500">{t("불러오는 중...", "Loading...")}</div>;
