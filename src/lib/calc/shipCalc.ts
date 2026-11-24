@@ -273,7 +273,8 @@ export function computeShipTables(
             const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
             const need28d = Math.round(effectiveDaily * safetyDays);
             // 매뉴얼 예측치를 쓰는 경우엔 기존처럼 매뉴얼 일판매량 × 리드타임.
-            const predPeriod = manualDaily == null && trendPredPeriod != null ? trendPredPeriod : effectiveDaily * lt;
+            // 정수로 반올림해서 쓴다 — 화면/엑셀 J열(리드타임 소요량)과 같은 값으로 1~5주차를 계산해야 서로 안 어긋남.
+            const predPeriod = Math.round(manualDaily == null && trendPredPeriod != null ? trendPredPeriod : effectiveDaily * lt);
 
             const oh = sumParts(r, parts, "STOCK");
             const it = sumParts(r, parts, "INTRANSIT_STOCK");
@@ -281,7 +282,10 @@ export function computeShipTables(
             const shipPlan = sumParts(r, parts, "PRODUCTION_PLAN_QTY") +
                 (wh === "CA" ? ((r.CA1_PRODUCTION_PLAN_QTY as number) ?? 0) : 0);
 
-            const avail = oh + it + shipPlan;
+            // 화면/엑셀에 찍히는 값(재고는 정수, 1일치는 소수 2자리) 기준으로 계산한다 — 그래야 엑셀 수식으로 다시 계산해도
+            // 화면 선적량과 1개도 안 어긋난다.
+            const avail = Math.round(oh) + Math.round(it) + Math.round(shipPlan);
+            const shownDaily = Math.round(effectiveDaily * 100) / 100;
             const projectedAfterPeriod = avail - predPeriod;
             const rawShip = Math.max(0, need28d - projectedAfterPeriod);
             
@@ -291,7 +295,7 @@ export function computeShipTables(
             // cap씌우는 부분 (Manual 포함 전체 캡 적용)
             const shipQty = whOn ? Math.round(Math.min(rawShip, Math.max(0, need28d))) : 0;
             const { week2, week3, week4, week5 } = whOn
-                ? rollMultiWeek(avail, effectiveDaily, predPeriod, need28d, shipQty, true)
+                ? rollMultiWeek(avail, shownDaily, predPeriod, need28d, shipQty, true)
                 : { week2: 0, week3: 0, week4: 0, week5: 0 };
             
 
@@ -373,7 +377,8 @@ function applyRebalance(
             // 재배분으로 week1(shipQty)이 바뀌었으므로, 그 값을 기준으로 2~5주차도 다시 굴린다.
             const avail = row.oh + row.it + row.shipPlan;
             //const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, row.predPeriod, row.need28d, row.shipQty, false); // Cap제거
-            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.daily, row.predPeriod, row.need28d, row.shipQty); //기존 캡 처리하던 부분
+            // 매뉴얼 예측치가 있으면 그 값으로 굴린다(화면 1일치 컬럼과 같은 값).
+            const { week2, week3, week4, week5 } = rollMultiWeek(avail, row.manualDaily ?? row.daily, row.predPeriod, row.need28d, row.shipQty); //기존 캡 처리하던 부분
             row.week2 = week2;
             row.week3 = week3;
             row.week4 = week4;
