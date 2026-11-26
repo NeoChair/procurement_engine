@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useForecastRows } from "@/lib/queries";
 import type { LogicMode } from "@/lib/calc/logicMode";
 import type { Week1AllocMode } from "@/lib/calc/rebalance";
 import { WH_GROUPS, getManualReferenceDate, manualTargetYm } from "@/lib/calc/shipCalc";
 import { baseDateFromGathDe, formatGathDe } from "@/lib/snapshot";
 import { PO_HORIZON_DAYS, PO_HORIZON_DAYS_SHORT } from "@/lib/calc/poCalc";
 import { useLang, type Lang } from "@/lib/i18n";
+import type { CapacityTable } from "@/lib/calc/capacity";
+import CapacityInput from "@/components/capacityInput";
 
 export type FilterState = {
     skuQuery: string;
@@ -17,6 +20,8 @@ export type FilterState = {
     week1AllocMode: Week1AllocMode;
     /** 선택한 스냅샷 날짜(GATH_DE, 'YYYYMMDDAM|PM'). 빈 문자열이면 최신 스냅샷. 발주/선적 엔진·PO 목록 전체가 이 날짜 데이터로 계산된다. */
     gathDe: string;
+    /** 공장 → 주간 캐파 (입력한 공장만 상한 적용, 비우면 기존 계산). */
+    capacity: CapacityTable;
 };
 
 function SelectArrowIcon() {
@@ -279,7 +284,9 @@ export default function SidebarFilter({
     const { lang, setLang, t } = useLang();
     const [width, setWidth] = useState(DEFAULT_WIDTH);
     const [collapsed, setCollapsed] = useState(false);
-    const [availableYms, setAvailableYms] = useState<Set<string>>(new Set());
+    const [capOpen, setCapOpen] = useState(false);
+    const { data: forecastRows } = useForecastRows();
+    const availableYms = useMemo(() => new Set((forecastRows ?? []).map(r => r.YEAR_MONTH)), [forecastRows]);
     const [snapshotDates, setSnapshotDates] = useState<string[]>([]);
     const isResizing = useRef(false);
 
@@ -294,15 +301,6 @@ export default function SidebarFilter({
             .then(json => { if (json.success) setSnapshotDates(json.data as string[]); });
     }, []);
 
-    useEffect(() => {
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const yms = new Set<string>((json.data as { YEAR_MONTH: string }[]).map(r => r.YEAR_MONTH));
-                setAvailableYms(yms);
-            });
-    }, []);
 
     useEffect(() => {
         function handleMouseMove(e: MouseEvent) {
@@ -502,6 +500,29 @@ export default function SidebarFilter({
                                 </div>
                             </div>
                         </div>
+                    )}
+                </div>
+
+                <hr className="border-gray-300" />
+
+                {/* 공장별 주간 캐파 상한 (N-SCOPE 제안 4). 값을 넣은 공장에만 적용된다. */}
+                <div className="flex flex-col gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setCapOpen(o => !o)}
+                        className="flex items-center justify-between gap-3 text-left"
+                    >
+                        <span className={lang === "en" ? "text-lg font-bold leading-snug text-gray-700" : "text-xl font-bold text-gray-700"}>🏭 {t("공장 주간 캐파", "Factory Weekly Capacity")}</span>
+                        <span className="flex-shrink-0 text-gray-500 transition-transform" style={{ transform: capOpen ? "rotate(90deg)" : "none" }}>
+                            <SidebarArrowIcon className="h-6 w-6" />
+                        </span>
+                    </button>
+                    {capOpen && (
+                        <CapacityInput
+                            factories={FACTORY_OPTIONS.map(o => o.value)}
+                            capacity={filters.capacity}
+                            onChange={c => update({ capacity: c })}
+                        />
                     )}
                 </div>
 

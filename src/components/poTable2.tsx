@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
-import type { SummaryRow } from "@/app/api/salessummary/route";
+import { useMemo } from "react";
+import { baseDateFromGathDe } from "@/lib/snapshot";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
 import { computePoCalc, aggregatePoBySku, type PoCalcRowAgg } from "@/lib/calc/poCalc";
-import type { ForecastMap } from "@/lib/calc/shipCalc";
-import type { ActualRatio } from "@/lib/calc/rebalance";
-import type { ForecastRow } from "@/app/api/forecast/route";
-import type { TrendMedianWindow } from "@/lib/calc/logicMode";
+import { useSalesSummary, useForecastMap, EMPTY_SUMMARY } from "@/lib/queries";
 import { useLang } from "@/lib/i18n";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
@@ -52,36 +48,11 @@ function buildColumns(logicMode: FilterState["logicMode"], t: (ko: string, en: s
 
 export default function PoTable2({ filters }: { filters: FilterState }) {
     const { t } = useLang();
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
-    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        fetch(salesSummaryUrl(filters.gathDe))
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
-                setRows(json.data as SummaryRow[]);
-                setShipRatio84d(json.shipRatio84d ?? {});
-                setTrendMedians(json.trendMedians ?? {});
-            })
-            .catch(err => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setLoading(false));
-
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const map: ForecastMap = {};
-                for (const row of json.data as ForecastRow[]) {
-                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
-                }
-                setForecastMap(map);
-            });
-    }, [filters.gathDe]);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const forecastMap = useForecastMap();
+    const { data: rows, shipRatio84d, trendMedians } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
+    const error = summaryQuery.error?.message ?? null;
 
     const displayRows = useMemo<DisplayRow[]>(() => {
         let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians, baseDateFromGathDe(filters.gathDe));

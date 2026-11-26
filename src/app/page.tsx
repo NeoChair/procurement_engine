@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PoTable from "@/components/poTable";
 import PoTable2 from "@/components/poTable2";
 import ShipTable1 from "@/components/shipTable1";
@@ -20,7 +20,11 @@ const DEFAULT_FILTERS: FilterState = {
     rebalance: false,
     week1AllocMode: "actual_ratio",
     gathDe: "",
+    capacity: {},
 };
+
+// 캐파 입력값은 이 브라우저에만 저장한다(localStorage). DB에는 쓰지 않는다.
+const CAP_STORAGE_KEY = "nscope.capacity.v1";
 
 export default function Home() {
     return (
@@ -34,6 +38,30 @@ function HomeContent() {
     const { t } = useLang();
     const [activeTab, setActiveTab] = useState<"po" | "ship" | "pomanage">("po");
     const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+    const [capLoaded, setCapLoaded] = useState(false);
+
+    // 새로고침해도 캐파 입력이 남도록 처음 한 번 불러오고, 바뀔 때마다 저장한다.
+    useEffect(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem(CAP_STORAGE_KEY) ?? "null");
+            if (saved && typeof saved === "object") {
+                // localStorage는 브라우저에서만 읽을 수 있어 마운트 후 한 번만 불러온다(서버 렌더와 어긋나지 않게).
+                // 예전(1~5주차 따로) 저장값은 첫 칸만 남긴다 — 지금은 공장당 캐파 하나.
+                const capacity: FilterState["capacity"] = {};
+                for (const [f, arr] of Object.entries(saved.capacity ?? {})) {
+                    const v = Array.isArray(arr) ? arr[0] : null;
+                    if (typeof v === "number") capacity[f] = [v];
+                }
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setFilters(f => ({ ...f, capacity }));
+            }
+        } catch { /* 저장값이 깨졌으면 무시 */ }
+        setCapLoaded(true);
+    }, []);
+    useEffect(() => {
+        if (!capLoaded) return;
+        localStorage.setItem(CAP_STORAGE_KEY, JSON.stringify({ capacity: filters.capacity }));
+    }, [capLoaded, filters.capacity]);
     // 화면에 실제로 불러온 스냅샷(GATH_DE). undefined=불러오는 중, null=정보 없음
     const [dataGathDe, setDataGathDe] = useState<string | null | undefined>(undefined);
 

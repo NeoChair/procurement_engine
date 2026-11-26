@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl } from "@/lib/snapshot";
+import { useMemo } from "react";
 import type { SummaryRow } from "@/app/api/salessummary/route";
+import { useSalesSummary, EMPTY_SUMMARY } from "@/lib/queries";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
@@ -83,27 +83,10 @@ function buildColumns(t: (ko: string, en: string) => string): DataTableColumn<Po
 export default function PoTable({ filters }: { filters: FilterState }) {
     const { t } = useLang();
     const columns = useMemo(() => buildColumns(t), [t]);
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        async function fetchData() {
-            try {
-                const res = await fetch(salesSummaryUrl(filters.gathDe));
-                const json = await res.json();
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
-                setRows(json.data as SummaryRow[]);
-                setTrendMedians(json.trendMedians ?? {});
-            } catch (err) {
-                setError(err instanceof Error ? err.message : String(err));
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchData();
-    }, [filters.gathDe]);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const { data: rows, trendMedians } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
+    const error = summaryQuery.error?.message ?? null;
 
     const displayRows = useMemo(() => {
         let result = rows.map(row => toPoRow(row, trendMedians));

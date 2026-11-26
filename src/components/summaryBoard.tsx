@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
-import type { SummaryRow } from "@/app/api/salessummary/route";
+import { useEffect, useMemo } from "react";
+import { baseDateFromGathDe } from "@/lib/snapshot";
 import { computePoCalc } from "@/lib/calc/poCalc";
-import type { ForecastMap, TrendMedianByWhMap } from "@/lib/calc/shipCalc";
 import { computeShipSummary } from "@/lib/calc/shipSummary";
-import type { ActualRatio } from "@/lib/calc/rebalance";
-import type { TrendMedianWindow } from "@/lib/calc/logicMode";
 import type { FilterState } from "@/components/sidebarFilters";
-import type { ForecastRow } from "@/app/api/forecast/route";
+import { useSalesSummary, useForecastMap, EMPTY_SUMMARY } from "@/lib/queries";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import { useLang } from "@/lib/i18n";
 
@@ -17,7 +13,6 @@ type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const MAIN_SKU_MAP = new Map<string, MainSkuRecord>(
     (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
 );
-
 export default function SummaryBoard({
     filters,
     activeTab,
@@ -27,40 +22,16 @@ export default function SummaryBoard({
     activeTab: "po" | "ship";
     onSnapshotDate?: (date: string | null, gathDe: string | null) => void;
 }) {
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
-    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [trendMedians, setTrendMedians] = useState<Record<string, TrendMedianWindow>>({});
-    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
-    const [loading, setLoading] = useState(true);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const forecastMap = useForecastMap();
+    const { data: rows, shipRatio84d, trendMedians, trendMediansByWh } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
     const { t } = useLang();
 
     useEffect(() => {
-        fetch(salesSummaryUrl(filters.gathDe))
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    setRows(json.data as SummaryRow[]);
-                    setShipRatio84d(json.shipRatio84d ?? {});
-                    setTrendMedians(json.trendMedians ?? {});
-                    setTrendMediansByWh(json.trendMediansByWh ?? {});
-                    onSnapshotDate?.(json.snapshotDate ?? null, json.gathDe ?? null);
-                }
-            })
-            .finally(() => setLoading(false));
-
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const map: ForecastMap = {};
-                for (const row of json.data as ForecastRow[]) {
-                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
-                }
-                setForecastMap(map);
-            });
+        if (summaryQuery.data) onSnapshotDate?.(summaryQuery.data.snapshotDate, summaryQuery.data.gathDe);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [filters.gathDe]);
+    }, [summaryQuery.data]);
 
     const poSummary = useMemo(() => {
         let calc = computePoCalc(rows, filters.logicMode, shipRatio84d, forecastMap, trendMedians, baseDateFromGathDe(filters.gathDe));

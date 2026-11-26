@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl } from "@/lib/snapshot";
-import type { SummaryRow } from "@/app/api/salessummary/route";
+import { useMemo } from "react";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship1Row, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
+import { computeShipTables, type Ship1Row } from "@/lib/calc/shipCalc";
+import { useSalesSummary, EMPTY_SUMMARY } from "@/lib/queries";
 import { useLang } from "@/lib/i18n";
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
@@ -26,6 +25,9 @@ function buildShip1Columns(t: (ko: string, en: string) => string): DataTableColu
     { key: "CY7",      label: t("올해 7일", "This Year: Last 7 Days Sales"),align: "right", getValue: r => r.cy7 ?? 0,       render: r => n(r.cy7) },
     { key: "CY28",     label: t("올해 28일", "This Year: Last 28 Days Sales"),align: "right", getValue: r => r.cy28 ?? 0,      render: r => n(r.cy28) },
     { key: "CY56",     label: t("올해 56일", "This Year: Last 56 Days Sales"),align: "right", getValue: r => r.cy56 ?? 0,      render: r => n(r.cy56) },
+    { key: "AVG7",     label: t("올해 7일 평균", "This Year: 7-Day Avg"),align: "right", getValue: r => r.a7 ?? 0, render: r => (r.a7 ?? 0).toFixed(2) },
+    { key: "AVG28",    label: t("올해 28일 평균", "This Year: 28-Day Avg"),align: "right", getValue: r => r.a28 ?? 0, render: r => (r.a28 ?? 0).toFixed(2) },
+    { key: "AVG56",    label: t("올해 56일 평균", "This Year: 56-Day Avg"),align: "right", getValue: r => r.a56 ?? 0, render: r => (r.a56 ?? 0).toFixed(2) },
     { key: "MED_W0", label: t("중위값 -30~0일", "Last Year Median (Day -30 to 0)"),align: "right", getValue: r => r.trendWindow?.w0 ?? 0, render: r => n(r.trendWindow?.w0) },
     { key: "MED_W1", label: t("중위값 0~30일", "Last Year Median (Day 0 to 30)"),align: "right", getValue: r => r.trendWindow?.w1 ?? 0, render: r => n(r.trendWindow?.w1) },
     { key: "MED_W2", label: t("중위값 30~60일", "Last Year Median (Day 30 to 60)"),align: "right", getValue: r => r.trendWindow?.w2 ?? 0, render: r => n(r.trendWindow?.w2) },
@@ -57,22 +59,10 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 export default function ShipTable1({ filters }: { filters: FilterState }) {
     const { t } = useLang();
     const columns = useMemo(() => buildShip1Columns(t), [t]);
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        fetch(salesSummaryUrl(filters.gathDe))
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
-                setRows(json.data as SummaryRow[]);
-                setTrendMediansByWh(json.trendMediansByWh ?? {});
-            })
-            .catch(err => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setLoading(false));
-    }, [filters.gathDe]);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const { data: rows, trendMediansByWh } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
+    const error = summaryQuery.error?.message ?? null;
 
     const displayRows = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(

@@ -5,6 +5,9 @@ import type { ForecastRow } from "@/app/api/forecast/route";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import { useLang } from "@/lib/i18n";
+import { useForecastRows, useInvalidateForecast } from "@/lib/queries";
+
+const EMPTY_FORECAST: ForecastRow[] = [];
 
 type MainSkuRecord = { SKU: string; IsOn: string; Factory: string };
 const KNOWN_SKUS = new Set((mainSkuData as MainSkuRecord[]).map(r => r.SKU));
@@ -92,9 +95,12 @@ function Modal({ onClose, children }: { onClose: () => void; children: React.Rea
 
 export default function ForecastManage() {
     const { t, lang } = useLang();
-    const [rows, setRows] = useState<ForecastRow[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const forecastQuery = useForecastRows();
+    const rows = forecastQuery.data ?? EMPTY_FORECAST;
+    const loading = forecastQuery.isPending;
+    const error = forecastQuery.error?.message ?? null;
+    // 저장/삭제 후 다시 불러오기: 이 표와 발주·선적 계산이 같은 캐시를 쓰므로 함께 갱신된다.
+    const fetchRows = useInvalidateForecast();
 
     const [modalOpen, setModalOpen] = useState(false);
     const [entryMode, setEntryMode] = useState<"select" | "single" | "bulk">("select");
@@ -116,20 +122,6 @@ export default function ForecastManage() {
     const [bulkErrors, setBulkErrors] = useState<string[]>([]);
     const [bulkSaving, setBulkSaving] = useState(false);
     const [bulkResult, setBulkResult] = useState<{ ok: boolean; message: string } | null>(null);
-
-    function fetchRows() {
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) throw new Error(json.error ?? t("조회 실패", "Failed to load"));
-                setRows(json.data as ForecastRow[]);
-                setError(null);
-            })
-            .catch(err => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setLoading(false));
-    }
-
-    useEffect(() => { fetchRows(); }, []);
 
     const ymOptions = useMemo(() => {
         const set = new Set(rows.map(r => r.YEAR_MONTH));
@@ -176,7 +168,7 @@ export default function ForecastManage() {
             });
             const json = await res.json();
             if (!json.success) throw new Error(json.error ?? t("삭제 실패", "Failed to delete"));
-            setRows(prev => prev.filter(r => !(r.SKU === sku && r.YEAR_MONTH === ym)));
+            fetchRows();
         } catch (err) {
             alert(err instanceof Error ? err.message : String(err));
         }

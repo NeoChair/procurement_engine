@@ -3,6 +3,7 @@ import type { SummaryRow } from "@/app/api/salessummary/route";
 import { weightedGrowthFactor, newProductDaily, isNewProduct, isDrop, medianTrend, type LogicMode, type TrendMedianWindow } from "./logicMode";
 import { rebalanceSku, RATIO_WAREHOUSES, type RatioWh, type Week1AllocMode, type ActualRatio } from "./rebalance";
 import { isWhOn } from "./skuRules";
+import { runShipWeeks, LOW_VOLUME_MIN_QTY, type ShipCtx, type CapacityTable, type CapReportRow } from "./capacity";
 
 /** default_manual 모드 선적 추세 계산용: SKU+창고별 작년 오늘 -30일~+150일 6구간(30일씩) 판매 중위값. */
 export type TrendMedianByWhMap = Record<string, Partial<Record<RatioWh, TrendMedianWindow>>>;
@@ -103,6 +104,8 @@ export type Ship1Row = {
     ly7: number; cy7: number;
     cy28: number;
     cy56: number;
+    /** 품절일 제외 일판매 평균 (창고그룹 합) */
+    a7: number; a28: number; a56: number;
 };
 
 export type Ship2Row = {
@@ -136,6 +139,18 @@ export type Ship2Row = {
      * 현재고·이동중재고·일 예상판매량이 전부 0(관리할 게 아무것도 없는 죽은 SKU/창고 조합)이면 태그 없이 null.
      */
     dsiStatus: "red" | "yellow" | "green" | null;
+    /** 기준판매량 중앙값 식 (0.7×7일 + 0.2×28일 + 0.1×56일 중앙값) */
+    medianDaily: number;
+    /** 기준판매량 평균값 식 (같은 가중치, 품절일 제외 평균) */
+    avgDaily: number;
+    /** 7일 중앙값이 0이고 평균값 식이 더 커서 평균값 식을 쓴 창고 */
+    avgWins: boolean;
+    /** 7일 중앙값 0인 소량 창고 → 보유 목표 최소 50개 */
+    lowVolume: boolean;
+    /** 1~5주차 캐파 줄임 단계 설명 ("" = 안 줄임) */
+    capLabels: string[];
+    /** 이 행의 공장이 캐파로 줄어든 주가 있음 → 엑셀 수식 대신 값으로 내보낸다 */
+    capAdjusted: boolean;
 };
 
 /** 창고별 Floor 기반 일수요(healthy demand) 계산: 56일(50%)+28일(30%)+7일(20%) 가중, 결측 기간은 재정규화.
@@ -193,9 +208,13 @@ export function computeShipTables(
     trendMediansByWh: TrendMedianByWhMap = {},
     /** 과거 스냅샷 기준 계산 시 그 스냅샷 날짜(매뉴얼 예측 YM 기준일). 없으면 오늘 PST. */
     baseDate?: Date,
-): { table1: Ship1Row[]; table2: Ship2Row[] } {
+    /** 공장별 주간 캐파 상한 (사이드바 입력). enabled=false거나 없으면 기존과 같다. */
+    capOptions?: { enabled: boolean; capacity: CapacityTable },
+): { table1: Ship1Row[]; table2: Ship2Row[]; capReport: CapReportRow[]; capSkippedByRebalance: boolean } {
     const table1: Ship1Row[] = [];
     const table2: Ship2Row[] = [];
+    // table2와 같은 순서로 쌓는다 (runShipWeeks 결과를 table2[i]에 그대로 넣음).
+    const shipCtxs: { ctx: ShipCtx; factory: string }[] = [];
 
     for (const r of rows) {
         if (isDrop(r.SKU)) continue;
@@ -220,15 +239,32 @@ export function computeShipTables(
             const whWindow = RATIO_WAREHOUSES.includes(wh as RatioWh) ? trendMediansByWh[r.SKU]?.[wh as RatioWh] : undefined;
             const { ratios: trendRatios } = medianTrend(whWindow);
 
-            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, trendWindow: whWindow, trendRatios, ly7, cy7, cy28, cy56 });
 
             // Ship qty calc
             const growthFactor = weightedGrowthFactor(cy7, ly7, cy28, ly28, cy56, ly56);
             const isNew = isNewProduct(r.SKU, ly7, ly28, ly56, growthFactor, logicMode);
 
+            // 기준판매량(제안 2): 창고 7일 중앙값이 0이면 중앙값 식과 평균값 식 중 큰 값, 아니면 중앙값 식 그대로.
+            // 평균은 품절일 제외 일판매 평균(RPA 20261125PM부터). 옛 스냅샷은 평균이 0이라 기존과 같다.
+            const a7  = sumParts(r, parts, "CURR_YEAR_1WEEK_SALES_AVG");
+            const a28 = sumParts(r, parts, "CURR_YEAR_1MONTH_SALES_AVG");
+            const a56 = sumParts(r, parts, "CURR_YEAR_2MONTH_SALES_AVG");
+            const medianDaily = newProductDaily(cy7, cy28, cy56);
+            const avgDaily = newProductDaily(a7, a28, a56);
+            const useAvgRule = cy7 === 0;
+            const baseDaily = useAvgRule ? Math.max(medianDaily, avgDaily) : medianDaily;
+            const avgWins = useAvgRule && avgDaily > medianDaily;
+            // 제안 3: 평균 기준을 쓰는 창고(7일 중앙값 0) 중 56일 안에 판매가 있는 곳은 최소 50개 보유.
+            // 판매가 아예 없는 창고까지 50개씩 보내지 않도록 baseDaily > 0 조건을 둔다.
+            const isLow = useAvgRule && baseDaily > 0;
+
+            table1.push({ key: `${r.SKU}__${wh}__t1`, sku: r.SKU, factory, producing, wh, trendWindow: whWindow, trendRatios, ly7, cy7, cy28, cy56,
+                a7: Math.round(a7 * 100) / 100, a28: Math.round(a28 * 100) / 100, a56: Math.round(a56 * 100) / 100 });
+
             let daily: number;
             // default_manual 모드의 리드타임 소요량(구간별 추세 합산). 다른 모드는 null → 일판매량 × lt.
             let trendPredPeriod: number | null = null;
+            let trendCtx: ShipCtx["trend"] = null;
             if (logicMode === "default_manual") {
                 // 1일치 예상출고량 추세: 이 창고의 리드타임(lt)이 속한 30일 구간의 추세부터 캐스케이드로
                 // 아래 구간까지 시도한다 — 추세N은 [(N-1)*30, N*30)일 구간을 나타내므로 lt가 속한 구간은
@@ -242,7 +278,6 @@ export function computeShipTables(
                 }
                 // 추세 배수 상한: 최대 2배(200%)까지만 곱한다.
                 shipTrend = Math.min(TREND_MAX, shipTrend);
-                const baseDaily = newProductDaily(cy7, cy28, cy56);
                 daily = baseDaily * shipTrend;
 
                 // 리드타임 소요량: 리드타임을 30일 구간으로 나눠 구간마다 그 구간 추세를 곱해서 더한다(누적 곱 아님).
@@ -250,13 +285,17 @@ export function computeShipTables(
                 //     lt=92 → 기본×추세1×30 + 기본×추세2×30 + 기본×추세3×30 + 기본×추세4×2.
                 // 추세가 1 미만(하락)인 구간은 1로, 2 초과인 구간은 2로 본다.
                 trendPredPeriod = 0;
+                const segments: { days: number; t: number }[] = [];
                 for (let i = 0; i * 30 < lt; i++) {
                     const days = Math.min(30, lt - i * 30);
                     const t = trendRatios[Math.min(i, trendRatios.length - 1)];
-                    trendPredPeriod += baseDaily * Math.min(TREND_MAX, Math.max(1, t)) * days;
+                    const tc = Math.min(TREND_MAX, Math.max(1, t));
+                    segments.push({ days, t: tc });
+                    trendPredPeriod += baseDaily * tc * days;
                 }
+                trendCtx = { baseDaily, shipTrend, segments };
             } else if (isNew) {
-                daily = newProductDaily(cy7, cy28, cy56);
+                daily = baseDaily;
             } else {
                 // daily = (LY_ACTL * growth) / lt — LY_ACTL은 창고별 리드타임(lt)만큼의 작년 forward 실적이므로
                 // 일수요로 환산하려면 고정 63이 아니라 해당 창고의 lt로 나눠야 한다.
@@ -271,7 +310,8 @@ export function computeShipTables(
             // const usingManual = manualDaily != null; // 현재 미사용 (캡을 Manual 포함 전체 적용으로 바꾸면서), 필요해지면 다시 사용
 
             const safetyDays = fixed42daysSKU.includes(r.SKU) ? 42 : 28;
-            const need28d = Math.round(effectiveDaily * safetyDays);
+            // 소량 SKU는 28일치 대신 최소 50개를 보유 목표로 쓴다(엑셀 I열 = 이 값이라 수식도 그대로 맞는다).
+            const need28d = Math.max(Math.round(effectiveDaily * safetyDays), isLow ? LOW_VOLUME_MIN_QTY : 0);
             // 매뉴얼 예측치를 쓰는 경우엔 기존처럼 매뉴얼 일판매량 × 리드타임.
             // 정수로 반올림해서 쓴다 — 화면/엑셀 J열(리드타임 소요량)과 같은 값으로 1~5주차를 계산해야 서로 안 어긋남.
             const predPeriod = Math.round(manualDaily == null && trendPredPeriod != null ? trendPredPeriod : effectiveDaily * lt);
@@ -285,19 +325,22 @@ export function computeShipTables(
             // 화면/엑셀에 찍히는 값(재고는 정수, 1일치는 소수 2자리) 기준으로 계산한다 — 그래야 엑셀 수식으로 다시 계산해도
             // 화면 선적량과 1개도 안 어긋난다.
             const avail = Math.round(oh) + Math.round(it) + Math.round(shipPlan);
-            const shownDaily = Math.round(effectiveDaily * 100) / 100;
-            const projectedAfterPeriod = avail - predPeriod;
-            const rawShip = Math.max(0, need28d - projectedAfterPeriod);
-            
+
             // MAIN_SKU에서 이 창고가 FALSE면 선적하지 않는다 — 1~5주차 전부 0.
             const whOn = isWhOn(r.SKU, wh);
 
-            // cap씌우는 부분 (Manual 포함 전체 캡 적용)
-            const shipQty = whOn ? Math.round(Math.min(rawShip, Math.max(0, need28d))) : 0;
-            const { week2, week3, week4, week5 } = whOn
-                ? rollMultiWeek(avail, shownDaily, predPeriod, need28d, shipQty, true)
-                : { week2: 0, week3: 0, week4: 0, week5: 0 };
-            
+            // 1~5주차 선적량은 아래 runShipWeeks에서 한꺼번에 계산한다(공장별 캐파 상한을 같이 맞추려고).
+            // 캐파가 없으면 기존 식(MIN(MAX(0, 28일치 − (가용재고 − 리드타임 소요량)), 28일치) + 롤링)과 같다.
+            shipCtxs.push({
+                factory,
+                ctx: {
+                    whOn, avail, lt, safetyDays, isLow,
+                    trend: manualDaily == null ? trendCtx : null,
+                    flatDaily: effectiveDaily,
+                },
+            });
+            const shipQty = 0, week2 = 0, week3 = 0, week4 = 0, week5 = 0;
+
 
             // Shock Warning: 창고 수요가 있고 SKU 판매 최소 필터 통과 시, 현재고가 7일치 최종수요보다 적으면 경고
             const floorDd = floorDailyDemand(cy7, cy28, cy56);
@@ -329,15 +372,38 @@ export function computeShipTables(
                 rebalanceFlag: whOn ? "" : "⚫ 창고 OFF", shock, actualRatio,
                 dsiDays: dsiDays == null ? null : Math.round(dsiDays * 10) / 10,
                 dsiStatus,
+                medianDaily: Math.round(medianDaily * 100) / 100,
+                avgDaily: Math.round(avgDaily * 100) / 100,
+                avgWins,
+                lowVolume: isLow,
+                capLabels: [],
+                capAdjusted: false,
             });
         }
     }
+
+    // 재배분은 창고 사이로 다시 나누면서 주차 합계가 바뀌므로, 재배분이 켜져 있으면 캐파는 적용하지 않는다.
+    const capOn = !!capOptions?.enabled && !rebalance;
+    const { results, report } = runShipWeeks(shipCtxs, capOn ? capOptions!.capacity : null);
+    results.forEach((res, i) => {
+        const row = table2[i];
+        [row.shipQty, row.week2, row.week3, row.week4, row.week5] = res.ships;
+        row.capLabels = res.stepLabels;
+        row.capAdjusted = res.adjusted;
+        if (res.adjusted) {
+            // 캐파로 1주차 계산값이 바뀌었으면 화면 1일치/28일치/리드타임 소요량도 1주차에 쓴 값으로 보여준다.
+            // (매뉴얼 행의 1일치는 manualDaily 칸에 그대로 있다.)
+            if (row.manualDaily == null) row.daily = res.week1.shownDaily;
+            row.need28d = Math.round(res.week1.need);
+            row.predPeriod = res.week1.predPeriod;
+        }
+    });
 
     if (rebalance) {
         applyRebalance(table2, week1AllocMode, shipRatio84d);
     }
 
-    return { table1, table2 };
+    return { table1, table2, capReport: report, capSkippedByRebalance: !!capOptions?.enabled && rebalance };
 }
 
 /** CA/TX/NJ/GA 4개 창고의 선적량을 SKU별로 Target/Actual Ratio 기준 재배분한다 (WF는 대상 아님, 그대로 유지). */

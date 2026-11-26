@@ -24,7 +24,7 @@ export function computeShipSummary(
     const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
         (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
     );
-    const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh, baseDate);
+    const { table2 } = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh, baseDate, { enabled: true, capacity: filters.capacity });
     let calc = table2;
 
     if (filters.skuQuery) {

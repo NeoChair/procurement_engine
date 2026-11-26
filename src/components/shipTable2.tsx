@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { salesSummaryUrl, baseDateFromGathDe } from "@/lib/snapshot";
-import type { SummaryRow } from "@/app/api/salessummary/route";
+import { baseDateFromGathDe } from "@/lib/snapshot";
 import mainSkuData from "@/data/sku-master/MAIN_SKU_260211.json";
 import DataTable, { type DataTableColumn } from "@/components/dataTable";
 import type { FilterState } from "@/components/sidebarFilters";
-import { computeShipTables, type Ship2Row, type ForecastMap, type TrendMedianByWhMap } from "@/lib/calc/shipCalc";
-import type { ActualRatio } from "@/lib/calc/rebalance";
-import type { ForecastRow } from "@/app/api/forecast/route";
+import { computeShipTables, type Ship2Row } from "@/lib/calc/shipCalc";
+import type { CapReportRow } from "@/lib/calc/capacity";
+import { useSalesSummary, useForecastMap, EMPTY_SUMMARY } from "@/lib/queries";
 import { isWhOn } from "@/lib/calc/skuRules";
 import { useLang } from "@/lib/i18n";
 
@@ -78,13 +77,18 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
 
     let prevProjected = proj[0];
     let prevShip = 0;
+    // 앞 주차를 사람이 고치지 않았으면 엔진 값을 그대로 쓴다 — 엔진 값엔 캐파 줄임이 들어 있어서
+    // 여기서 다시 굴리면 캐파가 풀린다. (캐파가 없으면 엔진 값과 다시 굴린 값은 같다.)
+    let editedBefore = false;
     WEEK_FIELDS.forEach((f, i) => {
         let computed: number;
         if (i === 0) {
             computed = computedBase.shipQty;
         } else {
             const projectedThisWeek = prevProjected + prevShip - daily * 7;
-            computed = whOn ? Math.round(Math.min(Math.max(0, need28 - projectedThisWeek), Math.max(0, need28))) : 0;
+            computed = !editedBefore
+                ? computedBase[f]
+                : whOn ? Math.round(Math.min(Math.max(0, need28 - projectedThisWeek), Math.max(0, need28))) : 0;
             prevProjected = Math.max(0, projectedThisWeek);
             proj.push(prevProjected);
         }
@@ -92,11 +96,13 @@ function computeEffective(r: Ship2Row, ov: RowOverride | undefined) {
         const effective = overrideVal ?? computed;
         values[f] = effective;
         overridden[f] = overrideVal != null;
+        if (overrideVal != null) editedBefore = true;
         prevShip = effective;
     });
 
     return { values, overridden, proj };
 }
+
 
 /** 사람이 직접 고친 셀 표시(볼드+회색). 상태색(빨강 선적량 강조, Status 등)보다 우선한다 —
  *  "이 숫자는 자동계산이 아니라 내가 입력한 값"이라는 게 더 중요한 정보라서. */
@@ -146,7 +152,7 @@ function buildShip2Columns(
         // 재배분(Rebalance)이 켜져 있으면 재배분 결과라서 수식으로 재현할 수 없으므로 값 그대로 둔다.
         {
             ...weekColumn("shipQty", t("선적량", "Shipping Plan Qty")), key: "SHIP_QTY",
-            getFormula: (r, row) => (rebalance || computeEffective(r, overrides[r.key]).overridden.shipQty || !isWhOn(r.sku, r.wh))
+            getFormula: (r, row) => (rebalance || r.capAdjusted || computeEffective(r, overrides[r.key]).overridden.shipQty || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-((E${row}+F${row}+G${row})-J${row})),MAX(0,I${row})),0)`,
         },
@@ -159,7 +165,7 @@ function buildShip2Columns(
         },
         {
             ...weekColumn("week2", t("선적량 2주", "Shipping Plan Qty Week 2")), key: "WEEK2",
-            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week2 || !isWhOn(r.sku, r.wh))
+            getFormula: (r, row) => (r.capAdjusted || computeEffective(r, overrides[r.key]).overridden.week2 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(L${row}+K${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
@@ -170,7 +176,7 @@ function buildShip2Columns(
         },
         {
             ...weekColumn("week3", t("선적량 3주", "Shipping Plan Qty Week 3")), key: "WEEK3",
-            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week3 || !isWhOn(r.sku, r.wh))
+            getFormula: (r, row) => (r.capAdjusted || computeEffective(r, overrides[r.key]).overridden.week3 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(N${row}+M${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
@@ -181,7 +187,7 @@ function buildShip2Columns(
         },
         {
             ...weekColumn("week4", t("선적량 4주", "Shipping Plan Qty Week 4")), key: "WEEK4",
-            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week4 || !isWhOn(r.sku, r.wh))
+            getFormula: (r, row) => (r.capAdjusted || computeEffective(r, overrides[r.key]).overridden.week4 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(P${row}+O${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
@@ -192,7 +198,7 @@ function buildShip2Columns(
         },
         {
             ...weekColumn("week5", t("선적량 5주", "Shipping Plan Qty Week 5")), key: "WEEK5",
-            getFormula: (r, row) => (computeEffective(r, overrides[r.key]).overridden.week5 || !isWhOn(r.sku, r.wh))
+            getFormula: (r, row) => (r.capAdjusted || computeEffective(r, overrides[r.key]).overridden.week5 || !isWhOn(r.sku, r.wh))
                 ? undefined
                 : `=ROUND(MIN(MAX(0,I${row}-(R${row}+Q${row}-H${row}*7)),MAX(0,I${row})),0)`,
         },
@@ -206,13 +212,20 @@ function buildShip2Columns(
             exportFill: r => r.dsiStatus == null ? undefined : DSI_STATUS_FILL[r.dsiStatus],
             exportFontColor: r => r.dsiStatus == null ? undefined : DSI_STATUS_FONT[r.dsiStatus],
         },
-        // 맨 끝에 둔다 — 중간에 끼우면 xlsx 수식의 컬럼 글자(E,F,G…)가 밀려서 깨진다.
-        {
-            key: "WH_ON", label: t("창고 사용", "WH Active"), align: "left",
-            getValue: r => isWhOn(r.sku, r.wh) ? "ON" : "OFF",
-            cellClassName: r => isWhOn(r.sku, r.wh) ? "bg-inherit" : "!bg-gray-100 text-gray-500 font-semibold",
-        },
     ];
+
+    columns.push({
+        // 기준판매량에 쓴 식: 7일 중앙값 0이라 평균값 식이 더 커서 쓴 행만 "평균", 나머지는 "중앙값".
+        key: "BASE_RULE", label: t("기준", "Base"), align: "left",
+        getValue: r => r.avgWins ? t("평균", "Average") : t("중앙값", "Median"),
+        cellClassName: r => r.avgWins ? "!bg-[#e3f2fd] text-[#1565c0] font-semibold" : "bg-inherit",
+    });
+    columns.push({
+        // 캐파로 1주차를 줄인 경우만: 줄인 보유 일수, 추세까지 줄였으면 추세 변화.
+        key: "CAP_NOTE", label: t("캐파", "Capacity"), align: "left",
+        getValue: r => r.capLabels[0] ?? "",
+        cellClassName: r => r.capLabels[0] ? "!bg-[#fff3e0] text-[#e65100] font-semibold" : "bg-inherit",
+    });
 
     if (logicMode === "manual" || logicMode === "default_manual") {
         columns.push({ key: "MANUAL_FLAG", label: t("비고", "Note"), align: "left", getValue: r => r.manualDaily != null ? t("매뉴얼", "Manual") : "", render: r => r.manualDaily != null ? `ℹ️ ${t("매뉴얼", "Manual")}` : "" });
@@ -237,12 +250,11 @@ function applyFilters<T extends { sku: string; factory: string; wh: string }>(
 
 export default function ShipTable2({ filters }: { filters: FilterState }) {
     const { t } = useLang();
-    const [rows, setRows] = useState<SummaryRow[]>([]);
-    const [shipRatio84d, setShipRatio84d] = useState<Record<string, ActualRatio>>({});
-    const [forecastMap, setForecastMap] = useState<ForecastMap>({});
-    const [trendMediansByWh, setTrendMediansByWh] = useState<TrendMedianByWhMap>({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const summaryQuery = useSalesSummary(filters.gathDe);
+    const forecastMap = useForecastMap();
+    const { data: rows, shipRatio84d, trendMediansByWh } = summaryQuery.data ?? EMPTY_SUMMARY;
+    const loading = summaryQuery.isPending;
+    const error = summaryQuery.error?.message ?? null;
     // SKU+창고(row.key)별 사람이 직접 고친 선적량/2~5주차. 세션 임시 상태 — DB에는 저장하지 않는다.
     const [overrides, setOverrides] = useState<Record<string, RowOverride>>({});
 
@@ -258,42 +270,19 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
         });
     }
 
-    useEffect(() => {
-        fetch(salesSummaryUrl(filters.gathDe))
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) throw new Error(json.error ?? "데이터 조회 실패");
-                setRows(json.data as SummaryRow[]);
-                setShipRatio84d(json.shipRatio84d ?? {});
-                setTrendMediansByWh(json.trendMediansByWh ?? {});
-            })
-            .catch(err => setError(err instanceof Error ? err.message : String(err)))
-            .finally(() => setLoading(false));
-
-        fetch("/api/forecast")
-            .then(r => r.json())
-            .then(json => {
-                if (!json.success) return;
-                const map: ForecastMap = {};
-                for (const row of json.data as ForecastRow[]) {
-                    (map[row.SKU] ??= {})[row.YEAR_MONTH] = row.FRCST_STOCK;
-                }
-                setForecastMap(map);
-            });
-    }, [filters.gathDe]);
-
     const displayRows = useMemo(() => {
         const skuMeta = new Map<string, { Factory: string; IsOn: string }>(
             (mainSkuData as MainSkuRecord[]).map(r => [r.SKU, r])
         );
-        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh, baseDateFromGathDe(filters.gathDe));
+        const tables = computeShipTables(rows, skuMeta, filters.logicMode, filters.rebalance, filters.week1AllocMode, shipRatio84d, forecastMap, trendMediansByWh, baseDateFromGathDe(filters.gathDe),
+            { enabled: true, capacity: filters.capacity });
         // 창고별 FALSE 행도 숨기지 않고 선적량 0으로 보여준다(계산은 shipCalc에서 0 처리).
         let r = tables.table2.filter(row => MAIN_SKU_MAP.get(row.sku)?.IsOn !== "FALSE");
         r = applyFilters(r, filters);
         // 계산모드/재배분과 무관하게 항상 같은 순서(SKU→창고)로 유지해야, 사용자가 컬럼 정렬 중일 때
         // 동점 행들의 순서가 계산모드 변경만으로 뒤섞이지 않는다. 선적량 큰 순 기본표시는 defaultSort로 처리.
         r = [...r].sort((a, b) => a.sku.localeCompare(b.sku) || a.wh.localeCompare(b.wh));
-        return r;
+        return { rows: r, capReport: tables.capReport, capSkipped: tables.capSkippedByRebalance };
     }, [rows, filters, shipRatio84d, forecastMap, trendMediansByWh]);
 
     const columns = useMemo(
@@ -306,9 +295,12 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
 
     return (
         <div className="w-full px-2 py-4">
+            {Object.keys(filters.capacity).length > 0 && (
+                <CapacityReport report={displayRows.capReport} skipped={displayRows.capSkipped} />
+            )}
             <DataTable
                 columns={columns}
-                rows={displayRows}
+                rows={displayRows.rows}
                 rowKey={r => r.key}
                 fileName={t("선적_Table2", "ShippingPlan_Table2")}
                 defaultSort={(a, b) => {
@@ -316,6 +308,22 @@ export default function ShipTable2({ filters }: { filters: FilterState }) {
                     return b.shipQty - a.shipQty;
                 }}
             />
+        </div>
+    );
+}
+
+/** ④ 증감배수까지 빼도 캐파를 넘는 공장·주차만 경고한다 (넘치지 않으면 아무것도 안 보임). */
+function CapacityReport({ report, skipped }: { report: CapReportRow[]; skipped: boolean }) {
+    const { t } = useLang();
+    if (skipped) {
+        return <div className="mb-4 rounded-md bg-[#fff8e1] px-4 py-3 text-sm font-semibold text-[#f57f17]">⚠️ {t("선적 비율 재배분이 켜져 있어 캐파 상한을 적용하지 않았습니다.", "Capacity limit not applied because rebalancing is ON.")}</div>;
+    }
+    const overs = report.filter(r => r.over);
+    if (overs.length === 0) return null;
+    return (
+        <div className="mb-4 rounded-md bg-[#ffe0e0] px-4 py-3 text-sm font-semibold text-[#c62828]">
+            ⚠️ {t("증감배수까지 빼도 캐파를 넘습니다 — 공장 캐파가 평소 판매도 감당하지 못하는 상황입니다", "Still over capacity after removing the trend multiplier — capacity cannot cover base demand")}:{" "}
+            {overs.map(r => `${r.factory} ${r.week}${t("주", "W")} (${r.shipped.toLocaleString()} / ${r.cap.toLocaleString()})`).join(", ")}
         </div>
     );
 }
