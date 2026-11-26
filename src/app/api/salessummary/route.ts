@@ -109,6 +109,40 @@ export interface SummaryRow {
     WF_LAST_YEAR_ACTL_SALES_QTY: number;
     LAST_YEAR_ACTL_SALES_QTY: number;
 
+    // 품절일 제외 일판매 평균 (소수 2자리). 옛 스냅샷은 0.
+    CA_CURR_YEAR_1WEEK_SALES_AVG: number;
+    CA2_CURR_YEAR_1WEEK_SALES_AVG: number;
+    CA3_CURR_YEAR_1WEEK_SALES_AVG: number;
+    GA_CURR_YEAR_1WEEK_SALES_AVG: number;
+    GA2_CURR_YEAR_1WEEK_SALES_AVG: number;
+    NJ_CURR_YEAR_1WEEK_SALES_AVG: number;
+    SC_CURR_YEAR_1WEEK_SALES_AVG: number;
+    TX_CURR_YEAR_1WEEK_SALES_AVG: number;
+    WF_CURR_YEAR_1WEEK_SALES_AVG: number;
+    CURR_YEAR_1WEEK_TOTAL_SALES_AVG: number;
+
+    CA_CURR_YEAR_1MONTH_SALES_AVG: number;
+    CA2_CURR_YEAR_1MONTH_SALES_AVG: number;
+    CA3_CURR_YEAR_1MONTH_SALES_AVG: number;
+    GA_CURR_YEAR_1MONTH_SALES_AVG: number;
+    GA2_CURR_YEAR_1MONTH_SALES_AVG: number;
+    NJ_CURR_YEAR_1MONTH_SALES_AVG: number;
+    SC_CURR_YEAR_1MONTH_SALES_AVG: number;
+    TX_CURR_YEAR_1MONTH_SALES_AVG: number;
+    WF_CURR_YEAR_1MONTH_SALES_AVG: number;
+    CURR_YEAR_1MONTH_TOTAL_SALES_AVG: number;
+
+    CA_CURR_YEAR_2MONTH_SALES_AVG: number;
+    CA2_CURR_YEAR_2MONTH_SALES_AVG: number;
+    CA3_CURR_YEAR_2MONTH_SALES_AVG: number;
+    GA_CURR_YEAR_2MONTH_SALES_AVG: number;
+    GA2_CURR_YEAR_2MONTH_SALES_AVG: number;
+    NJ_CURR_YEAR_2MONTH_SALES_AVG: number;
+    SC_CURR_YEAR_2MONTH_SALES_AVG: number;
+    TX_CURR_YEAR_2MONTH_SALES_AVG: number;
+    WF_CURR_YEAR_2MONTH_SALES_AVG: number;
+    CURR_YEAR_2MONTH_TOTAL_SALES_AVG: number;
+
     CA1_PRODUCTION_PLAN_QTY: number;
     CA_PRODUCTION_PLAN_QTY: number;
     CA2_PRODUCTION_PLAN_QTY: number;
@@ -300,6 +334,11 @@ const SUMMARY_METRICS: { src: string; wh: (prefix: string) => string; total: str
     { src: "CURR_YEAR_2MONTH_SALES_QTY", wh: (p) => `${p}_CURR_YEAR_2MONTH_SALES_QTY`, total: "CURR_YEAR_2MONTH_TOTAL_SALES_QTY" },
     { src: "LAST_YEAR_2MONTH_SALES_QTY", wh: (p) => `${p}_LAST_YEAR_2MONTH_SALES_QTY`, total: "LAST_YEAR_2MONTH_TOTAL_SALES_QTY" },
     { src: "LAST_YEAR_ACTL_SALES_QTY", wh: (p) => `${p}_LAST_YEAR_ACTL_SALES_QTY`, total: "LAST_YEAR_ACTL_SALES_QTY" },
+    // 품절일 제외 일판매 평균(RPA가 20261125PM 스냅샷부터 채움). 그 전 스냅샷은 NULL → 아래 ISNULL로 0
+    // → 선적 계산에서 max(중앙값 식, 0)=중앙값 식이라 기존 결과와 같다.
+    { src: "CURR_YEAR_1WEEK_SALES_AVG", wh: (p) => `${p}_CURR_YEAR_1WEEK_SALES_AVG`, total: "CURR_YEAR_1WEEK_TOTAL_SALES_AVG" },
+    { src: "CURR_YEAR_1MONTH_SALES_AVG", wh: (p) => `${p}_CURR_YEAR_1MONTH_SALES_AVG`, total: "CURR_YEAR_1MONTH_TOTAL_SALES_AVG" },
+    { src: "CURR_YEAR_2MONTH_SALES_AVG", wh: (p) => `${p}_CURR_YEAR_2MONTH_SALES_AVG`, total: "CURR_YEAR_2MONTH_TOTAL_SALES_AVG" },
 ];
 
 const SUMMARY_PIVOT_COLUMNS = SUMMARY_METRICS.flatMap((m) => [
