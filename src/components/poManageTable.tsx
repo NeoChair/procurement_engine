@@ -42,6 +42,7 @@ type PoMasterRow = {
 // salessummary/route.ts의 생산계획(SP) 창고 코드 매핑과 동일한 기준을 쓴다.
 const WRHS_LABELS: Record<string, string> = {
     "0": "WF",
+    "0-CAN": "WF-CAN",
     "14361": "CA1",
     "14630": "CA",
     "14631": "CA2",
@@ -60,6 +61,7 @@ function whLabel(code: string): string {
 // 사이드바 "창고 필터"(CA/GA/NJ/TX/WF 5개 그룹) 매칭용. shipCalc.ts의 WH_GROUPS와 동일하게 CA/CA2/CA3->CA, GA/GA2/SC->GA로 묶는다.
 const WRHS_GROUPS: Record<string, string> = {
     "0": "WF",
+    "0-CAN": "WF-CAN",
     "14361": "CA",
     "14630": "CA",
     "14631": "CA",
